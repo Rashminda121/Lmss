@@ -4,11 +4,11 @@ generator client {
   previewFeatures = ["fullTextSearch","fullTextIndex"]
 }
 
-generator erd {
-  provider = "prisma-erd-generator"
-  output   = "./ERD.png" // Output file location
-  format   = "png" // You can also use "png", "dot", or "pdf"
-}
+// generator erd {
+//   provider = "prisma-erd-generator"
+//   output   = "./ERD.png" // Output file location
+//   format   = "png" // You can also use "png", "dot", or "pdf"
+// }
 
 
 datasource db {
