@@ -1,14 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const lecturerController = require("../controllers/lecturerController");
 
-// Lecturer dashboard route
-router.get("/", (req, res) => {
-  res.send("Welcome to the Lecturer Dashboard");
-});
+router.get("/", lecturerController.lecturerProfile);
 
-// Example lecturer action
-router.post("/create-course", (req, res) => {
-  res.send("Lecturer created a new course");
-});
+router.post("/create-user", lecturerController.createUser);
+router.put("/update-user", lecturerController.updateUser);
+router.delete("/delete-user", lecturerController.deleteUser);
 
 module.exports = router;

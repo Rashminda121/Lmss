@@ -1,14 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const adminController = require("../controllers/adminController");
 
-// Admin dashboard route
-router.get("/", (req, res) => {
-  res.send("Welcome to the Admin Dashboard");
-});
+router.get("/", adminController.adminProfile);
 
-// Example admin action
-router.post("/create-user", (req, res) => {
-  res.send("Admin creates a new user");
-});
+router.post("/create-user", adminController.createUser);
+router.put("/update-user", adminController.updateUser);
+router.delete("/delete-user", adminController.deleteUser);
 
 module.exports = router;
