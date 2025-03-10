@@ -1,16 +1,40 @@
-const express = require("express");
-const app = express();
+require("dotenv").config();
+const { connectDB } = require("./db/db");
 
-// Middleware to parse JSON requests
+const express = require("express");
+const cors = require("cors");
+
+const app = express();
+app.use(cors());
+
 app.use(express.json());
 
-// Simple route
+app.use(
+  cors({
+    origin: "http://localhost/3000",
+  })
+);
+
+const adminRoutes = require("./routes/adminRoutes");
+const userRoutes = require("./routes/userRoutes");
+const lecturerRoutes = require("./routes/lecturerRoutes");
+
+app.use("/admin", adminRoutes);
+app.use("/user", userRoutes);
+app.use("/lecturer", lecturerRoutes);
+
 app.get("/", (req, res) => {
-  res.send("Hello from the Node.js backend!");
+  res.send("Hello from the backend!");
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
+connectDB()
+  .then(() => {
+    const PORT = process.env.PORT || 4000;
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error("Failed to connect to the database:", error);
+    process.exit(1);
+  });
