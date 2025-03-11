@@ -1,6 +1,7 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
+import { User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -98,13 +99,14 @@ const SubNavbar: React.FC = () => {
           </button>
 
           {isOpen && (
-            <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md overflow-hidden">
+            <div className="absolute right-0 mt-2 w-40 border border-slate-400 bg-white shadow-lg rounded-md overflow-hidden">
               <ul className="text-black text-center">
                 <li
                   onClick={handleProfile}
-                  className="px-4 py-2 border border-transparent rounded-md hover:border-gray-800 hover:bg-gray-200 cursor-pointer transition-all duration-300"
+                  className="px-4 py-2 border border-transparent rounded-md hover:border-gray-800 hover:bg-gray-200 cursor-pointer flex items-center justify-center gap-2 transition-all duration-300"
                 >
-                  Profile
+                  <User className="w-5 h-5 text-gray-600" />
+                  <span>Profile</span>
                 </li>
 
                 <li
