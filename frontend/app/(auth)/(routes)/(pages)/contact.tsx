@@ -1,6 +1,6 @@
 const ContactPage = () => {
   return (
-    <div className="p-10 justify-center">
+    <div className="p-10 justify-center bg-slate-100">
       <div className="relative flex items-center text-center mb-5 ">
         <h1 className="flex items-center justify-center text-xl md:text-2xl font-semibold flex-grow text-center">
           <img src="/headset.png" className="w-5 h-5 mr-2 z-10" />
@@ -46,7 +46,7 @@ const ContactPage = () => {
       <div className="flex justify-center mb-3 py-5 bg-blue-50 rounded-md">
         <p className="text-sm md:text-base text-center text-gray-600">
           Made for students and educators, supporting learning and growth. ©
-          2024 <span className="font-semibold text-blue-600">Lumina.</span>
+          2025 <span className="font-semibold text-blue-600">Lumina.</span>
           <span className="block">All rights reserved.</span>
         </p>
       </div>

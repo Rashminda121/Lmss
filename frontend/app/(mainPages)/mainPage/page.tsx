@@ -1,7 +1,15 @@
 import { GraduationCap, Bot, MessagesSquare, CalendarDays } from "lucide-react";
 import DashboardCard from "../_components/dashboardCards";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 const MainPage = () => {
+  const { userId } = auth();
+
+  if (!userId) {
+    return redirect("/");
+  }
+
   const dashboardItems = [
     { icon: GraduationCap, name: "Courses", href: "./" },
     { icon: Bot, name: "Assistance", href: "#about" },

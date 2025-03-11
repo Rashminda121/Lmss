@@ -1,6 +1,7 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
 
 const SubNavbar: React.FC = () => {
@@ -10,6 +11,8 @@ const SubNavbar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const { signOut } = useClerk();
+
+  const router = useRouter();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -35,7 +38,7 @@ const SubNavbar: React.FC = () => {
   };
 
   const menuItems = [
-    { name: "Home", path: "#home" },
+    { name: "Home", path: "mainPage" },
     { name: "About", path: "#about" },
     { name: "Articles", path: "#articles" },
     { name: "Contact", path: "#contact" },
@@ -44,6 +47,10 @@ const SubNavbar: React.FC = () => {
   const handleItemClick = (item: any) => {
     setActiveItem(item.name);
     setIsMenuOpen(false);
+  };
+
+  const handleProfile = () => {
+    router.push("./userProfile");
   };
 
   return (
@@ -92,16 +99,20 @@ const SubNavbar: React.FC = () => {
 
           {isOpen && (
             <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md overflow-hidden">
-              <ul className="text-black">
-                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+              <ul className="text-black text-center">
+                <li
+                  onClick={handleProfile}
+                  className="px-4 py-2 border border-transparent rounded-md hover:border-gray-800 hover:bg-gray-200 cursor-pointer transition-all duration-300"
+                >
                   Profile
                 </li>
-                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+
+                <li
+                  onClick={() => setIsModalOpen(true)}
+                  className="px-4 py-2 cursor-pointer"
+                >
                   <div className="hidden sm:block">
-                    <button
-                      onClick={() => setIsModalOpen(true)}
-                      className="bg-black text-white text-sm font-semibold p-2 px-6 rounded"
-                    >
+                    <button className="bg-black hover:bg-gray-700 hover:scale-105 text-white text-sm font-semibold p-2 px-8 rounded transition-all duration-300">
                       Sign out
                     </button>
                   </div>
@@ -142,12 +153,15 @@ const SubNavbar: React.FC = () => {
               {item.name}
             </a>
           ))}
-          <a
-            href="#profile"
+          <button
+            onClick={() => {
+              handleProfile();
+              setIsMenuOpen(false);
+            }}
             className="p-2 transition-colors duration-300 font-semibold text-black hover:text-blue-700"
           >
             Profile
-          </a>
+          </button>
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-black text-white text-sm font-semibold p-2 px-6 rounded"
