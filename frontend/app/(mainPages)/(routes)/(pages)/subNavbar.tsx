@@ -1,14 +1,33 @@
 "use client";
 
 import { useClerk } from "@clerk/nextjs";
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 const SubNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeItem, setActiveItem] = useState<string>("Home");
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const { signOut } = useClerk();
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handleSignOut = () => {
     signOut({ redirectUrl: "/" });
@@ -32,7 +51,7 @@ const SubNavbar: React.FC = () => {
       <div className="flex items-center justify-between">
         <div className="text-black font-extrabold text-lg flex flex-row space-x-4 items-center">
           <img src="/owl.gif" className="w-10 h-10" alt="" />
-          <a href="">
+          <a href="/mainPage">
             <span>Lumina</span>
           </a>
         </div>
@@ -56,13 +75,40 @@ const SubNavbar: React.FC = () => {
         </div>
 
         {/* Sign in Button in the right corner */}
-        <div className="hidden sm:block">
+        <div className="relative hidden sm:block" ref={dropdownRef}>
           <button
-            onClick={() => setIsModalOpen(true)}
-            className="bg-black text-white text-sm font-semibold p-2 px-6 rounded "
+            onClick={() => setIsOpen(!isOpen)}
+            onMouseEnter={() => setIsOpen(true)}
+            className="border border-black text-black text-sm font-semibold p-2 rounded-full flex items-center gap-2 transition-all duration-300"
           >
-            Sign out
+            <div className="w-8 h-8 rounded-full overflow-hidden">
+              <img
+                src="/profile-user.png"
+                className="w-full h-full object-cover"
+                alt="Profile"
+              />
+            </div>
           </button>
+
+          {isOpen && (
+            <div className="absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-md overflow-hidden">
+              <ul className="text-black">
+                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  Profile
+                </li>
+                <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                  <div className="hidden sm:block">
+                    <button
+                      onClick={() => setIsModalOpen(true)}
+                      className="bg-black text-white text-sm font-semibold p-2 px-6 rounded"
+                    >
+                      Sign out
+                    </button>
+                  </div>
+                </li>
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Button to toggle menu on mobile */}
@@ -96,6 +142,12 @@ const SubNavbar: React.FC = () => {
               {item.name}
             </a>
           ))}
+          <a
+            href="#profile"
+            className="p-2 transition-colors duration-300 font-semibold text-black hover:text-blue-700"
+          >
+            Profile
+          </a>
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-black text-white text-sm font-semibold p-2 px-6 rounded"
