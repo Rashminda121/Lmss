@@ -2,6 +2,11 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
   {
+    uid: {
+      type: String,
+      unique: true,
+      default: null,
+    },
     name: {
       type: String,
       default: null,
@@ -17,6 +22,7 @@ const userSchema = new mongoose.Schema(
     },
     image: {
       type: String,
+      default: null,
     },
     role: {
       type: String,

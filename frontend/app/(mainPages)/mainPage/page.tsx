@@ -1,14 +1,60 @@
-import { GraduationCap, Bot, MessagesSquare, CalendarDays } from "lucide-react";
+"use client";
+
+import { useUser } from "@clerk/nextjs";
+import { Bot, CalendarDays, GraduationCap, MessagesSquare } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect } from "react";
 import DashboardCard from "../_components/dashboardCards";
-import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 
 const MainPage = () => {
-  const { userId } = auth();
+  const { user, isLoaded } = useUser();
+  const router = useRouter();
 
-  if (!userId) {
-    return redirect("/");
+  useEffect(() => {
+    if (isLoaded && !user) {
+      router.push("/");
+    }
+
+    if (isLoaded && user) {
+      handleAddUser();
+    }
+  }, [isLoaded, user, router]);
+
+  if (!isLoaded) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        Loading...
+      </div>
+    );
   }
+
+  const handleAddUser = async () => {
+    if (!user) return;
+
+    const userData = {
+      uid: user?.id,
+      name: user?.fullName,
+      email: user?.primaryEmailAddress?.emailAddress,
+      image: user?.imageUrl,
+    };
+
+    try {
+      const response = await fetch("http://localhost:4000/user/addUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+      console.log("Response:", data);
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+  };
+
+  // console.log(user);
 
   const dashboardItems = [
     { icon: GraduationCap, name: "Courses", href: "./" },
