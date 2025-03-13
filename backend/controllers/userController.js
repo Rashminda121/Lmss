@@ -1,7 +1,26 @@
 const User = require("../models/userModel");
 
-const userProfile = (req, res) => {
-  res.send("User profile details");
+const userProfile = async (req, res) => {
+  try {
+    const { uid, email } = req.query;
+
+    if (!uid || !email) {
+      return res.status(400).json({ message: "Missing user ID or email." });
+    }
+
+    const user = await User.findOne({ uid: uid, email: email }).select(
+      "name email phone image role address updatedAt"
+    );
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
 };
 
 const addUser = async (req, res) => {
