@@ -65,8 +65,6 @@ const UserProfile = () => {
     } finally {
       setLoading(false);
     }
-
-    console.log(userProfile);
   };
 
   return (
