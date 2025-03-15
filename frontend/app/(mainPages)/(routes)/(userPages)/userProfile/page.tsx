@@ -114,7 +114,7 @@ const UserProfile = () => {
           </>
         ) : (
           <p className="text-center text-gray-500 text-lg">
-            User profile not found.
+            User profile not found
           </p>
         )}
       </div>
