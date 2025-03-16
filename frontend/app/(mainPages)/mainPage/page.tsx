@@ -1,7 +1,13 @@
 "use client";
 
 import { useUser } from "@clerk/nextjs";
-import { Bot, CalendarDays, GraduationCap, MessagesSquare } from "lucide-react";
+import {
+  Bot,
+  CalendarDays,
+  FileText,
+  GraduationCap,
+  MessagesSquare,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import DashboardCard from "../_components/dashboardCards";
@@ -58,9 +64,10 @@ const MainPage = () => {
 
   const dashboardItems = [
     { icon: GraduationCap, name: "Courses", href: "./" },
-    { icon: Bot, name: "Assistance", href: "#about" },
-    { icon: MessagesSquare, name: "Discussions", href: "#articles" },
-    { icon: CalendarDays, name: "Events", href: "#contact" },
+    { icon: Bot, name: "Assistance", href: "./assistance" },
+    { icon: MessagesSquare, name: "Discussions", href: "./discussions" },
+    { icon: CalendarDays, name: "Events", href: "./events" },
+    { icon: FileText, name: "Articles", href: "./userArticles" },
   ];
 
   return (
