@@ -1,45 +1,48 @@
-import { FiTrash2 } from "react-icons/fi";
-
 interface ClearChatDialogProps {
-  setShowDialog: (value: boolean) => void;
+  setShowDialog: (show: boolean) => void;
   handleClearChat: () => void;
+  darkMode: boolean;
 }
 
-const ClearChatDialog: React.FC<ClearChatDialogProps> = ({
+const ClearChatDialog = ({
   setShowDialog,
   handleClearChat,
-}) => {
+  darkMode,
+}: ClearChatDialogProps) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <div className="bg-gray-800 rounded-xl max-w-md w-full p-6 border border-gray-700 shadow-2xl">
-        <div className="text-center mb-6">
-          <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-900/30 mb-4">
-            <FiTrash2 className="h-5 w-5 text-red-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-white">
-            Clear Conversation
-          </h3>
-          <p className="mt-2 text-sm text-gray-300">
-            Are you sure you want to clear this chat? All messages will be
-            permanently deleted.
-          </p>
-        </div>
-        <div className="flex gap-3">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div
+        className={`${
+          darkMode ? "bg-gray-800" : "bg-white"
+        } p-6 rounded-lg shadow-xl max-w-md w-full`}
+      >
+        <h3
+          className={`text-lg font-medium mb-4 ${
+            darkMode ? "text-white" : "text-gray-900"
+          }`}
+        >
+          Clear Chat History
+        </h3>
+        <p className={`mb-6 ${darkMode ? "text-gray-300" : "text-gray-600"}`}>
+          Are you sure you want to clear all chat messages? This action cannot
+          be undone.
+        </p>
+        <div className="flex justify-end space-x-3">
           <button
             onClick={() => setShowDialog(false)}
-            className="px-4 py-2.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-white transition-colors flex-1 text-sm font-medium"
-            aria-label="Cancel and keep chat"
+            className={`px-4 py-2 rounded-lg ${
+              darkMode
+                ? "bg-gray-700 hover:bg-gray-600 text-white"
+                : "bg-gray-200 hover:bg-gray-300 text-gray-800"
+            }`}
           >
             Cancel
           </button>
           <button
-            onClick={() => {
-              handleClearChat();
-            }}
-            className="px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex-1 text-sm font-medium"
-            aria-label="Confirm and clear chat"
+            onClick={handleClearChat}
+            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg"
           >
-            Clear Chat
+            Clear
           </button>
         </div>
       </div>

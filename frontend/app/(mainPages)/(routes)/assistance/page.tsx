@@ -8,6 +8,8 @@ import {
   FiChevronRight,
   FiTrash2,
   FiCopy,
+  FiSun,
+  FiMoon,
 } from "react-icons/fi";
 import { RiRobot2Line } from "react-icons/ri";
 import ClearChatDialog from "./components/ClearChatDialog";
@@ -77,6 +79,21 @@ const UserAssistance = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [showDialog, setShowDialog] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
+
+  // Toggle dark/light mode
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode);
+  };
+
+  // Apply dark/light mode classes to body
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -86,7 +103,6 @@ const UserAssistance = () => {
         block: "nearest",
       });
     }
-    showDialog;
   }, [messages, showDialog]);
 
   const handleClearChat = () => {
@@ -220,40 +236,77 @@ const UserAssistance = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800">
+    <div
+      className={`min-h-screen transition-colors duration-300 ${
+        darkMode
+          ? "bg-gradient-to-b from-gray-900 to-gray-800"
+          : "bg-gradient-to-b from-gray-100 to-gray-200"
+      }`}
+    >
       <div className="container mx-auto px-4 py-8">
         <header className="text-center mb-6">
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+          <h1
+            className={`text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${
+              darkMode
+                ? "from-blue-400 to-blue-600"
+                : "from-blue-600 to-blue-800"
+            }`}
+          >
             User Assistance
           </h1>
-          <p className="text-gray-400 mt-2">
+          <p className={`${darkMode ? "text-gray-400" : "text-gray-600"} mt-2`}>
             Seek wisdom from The Last Codebender
           </p>
         </header>
 
         {/* Menu Bar with Controls */}
         <div className="flex justify-between items-center mb-4">
-          <button
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-            className="flex items-center gap-2 bg-gray-800 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
-          >
-            {isSidebarOpen ? (
-              <>
-                <FiX size={18} />
-                <span>Hide Roles</span>
-              </>
-            ) : (
-              <>
-                <FiMenu size={18} />
-                <span>Show Roles</span>
-              </>
-            )}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className={`flex items-center gap-2 ${
+                darkMode
+                  ? "bg-gray-800 text-gray-50 hover:bg-gray-700 border border-gray-700"
+                  : "bg-white hover:bg-gray-100 text-gray-900 border-gray-300 shadow-md"
+              }  px-4 py-2 rounded-lg transition-colors`}
+            >
+              {isSidebarOpen ? (
+                <>
+                  <FiX size={18} />
+                  <span>Hide Roles</span>
+                </>
+              ) : (
+                <>
+                  <FiMenu size={18} />
+                  <span>Show Roles</span>
+                </>
+              )}
+            </button>
+            <button
+              onClick={toggleDarkMode}
+              className={`px-3 py-2 rounded-lg ${
+                darkMode
+                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                  : "bg-white hover:bg-gray-100 border border-gray-300 shadow-md"
+              }`}
+              title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+            >
+              {darkMode ? (
+                <FiSun className="text-yellow-300" />
+              ) : (
+                <FiMoon className="text-gray-700" />
+              )}
+            </button>
+          </div>
           <div className="flex gap-2">
             <button
               onClick={copyChat}
               disabled={messages.length === 0}
-              className="flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+              className={`flex items-center gap-1 ${
+                darkMode
+                  ? "bg-gray-800 hover:bg-gray-700 text-gray-50 border border-gray-700"
+                  : "bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 shadow-md"
+              }  px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50`}
               title="Copy chat"
             >
               <FiCopy size={16} />
@@ -262,7 +315,11 @@ const UserAssistance = () => {
             <button
               onClick={() => setShowDialog(true)}
               disabled={messages.length === 0}
-              className="flex items-center gap-1 bg-gray-800 hover:bg-gray-700 text-white px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50"
+              className={`flex items-center gap-1 ${
+                darkMode
+                  ? "bg-gray-800 hover:bg-gray-700 border border-gray-700"
+                  : "bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 shadow-md"
+              }  px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50`}
               title="Clear chat"
             >
               <FiTrash2 size={16} />
@@ -271,15 +328,29 @@ const UserAssistance = () => {
           </div>
         </div>
 
-        <div className="flex h-[60vh] bg-black rounded-xl shadow-xl overflow-hidden border border-gray-800 relative">
+        <div
+          className={`flex h-[60vh] ${
+            darkMode ? "bg-black" : "bg-white"
+          } rounded-xl shadow-xl overflow-hidden border ${
+            darkMode ? "border-gray-800" : "border-gray-200"
+          } relative`}
+        >
           {/* Sidebar with role selection */}
           <div
-            className={`w-64 bg-gray-900 border-r border-gray-800 transition-all duration-300 ease-in-out ${
+            className={`w-64 ${
+              darkMode
+                ? "bg-gray-900 border-gray-800"
+                : "bg-gray-50 border-gray-200"
+            } border-r transition-all duration-300 ease-in-out ${
               isSidebarOpen ? "translate-x-0" : "-translate-x-full absolute"
             } h-full`}
           >
             <div className="p-4">
-              <h3 className="text-white font-medium mb-4">
+              <h3
+                className={`${
+                  darkMode ? "text-white" : "text-gray-900"
+                } font-medium mb-4`}
+              >
                 Select Assistant Role
               </h3>
               <div className="space-y-2">
@@ -291,8 +362,14 @@ const UserAssistance = () => {
                     }}
                     className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-lg text-sm ${
                       selectedRole === role
-                        ? "bg-purple-600 text-white"
-                        : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                        ? `${
+                            darkMode ? "bg-blue-600" : "bg-blue-500"
+                          } text-white`
+                        : `${
+                            darkMode
+                              ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                              : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
+                          }`
                     }`}
                   >
                     <span className="text-lg">
@@ -311,19 +388,33 @@ const UserAssistance = () => {
           {/* Main chat area */}
           <div className="flex-1 flex flex-col">
             {error && (
-              <div className="bg-red-900 text-white p-2 text-center text-sm">
+              <div
+                className={`${
+                  darkMode ? "bg-red-900" : "bg-red-100 text-red-900"
+                } p-2 text-center text-sm`}
+              >
                 {error}
               </div>
             )}
 
             <div
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-6 bg-gray-900"
+              className={`flex-1 overflow-y-auto p-4 space-y-6 ${
+                darkMode ? "bg-gray-900" : "bg-gray-50"
+              }`}
             >
               {messages.length === 0 ? (
-                <div className="flex items-center justify-center h-full text-gray-500">
+                <div
+                  className={`flex items-center justify-center h-full ${
+                    darkMode ? "text-gray-500" : "text-gray-400"
+                  }`}
+                >
                   <div className="text-center">
-                    <RiRobot2Line className="mx-auto text-4xl mb-3 text-purple-500" />
+                    <RiRobot2Line
+                      className={`mx-auto text-4xl mb-3 ${
+                        darkMode ? "text-blue-500" : "text-blue-600"
+                      }`}
+                    />
                     <p>Ask me anything as your {selectedRole} assistant...</p>
                   </div>
                 </div>
@@ -343,8 +434,8 @@ const UserAssistance = () => {
                       <div
                         className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${
                           m.role === "user"
-                            ? "bg-gray-700 ml-4"
-                            : "bg-purple-600 mr-4"
+                            ? `${darkMode ? "bg-gray-700" : "bg-gray-300"} ml-4`
+                            : `${darkMode ? "bg-blue-600" : "bg-blue-500"} mr-4`
                         }`}
                       >
                         {m.role === "user" ? (
@@ -356,22 +447,38 @@ const UserAssistance = () => {
                       <div
                         className={`relative px-4 py-3 rounded-lg ${
                           m.role === "user"
-                            ? "bg-gray-800 rounded-tr-none"
-                            : "bg-gray-700 rounded-tl-none"
+                            ? `${
+                                darkMode ? "bg-gray-800" : "bg-gray-200"
+                              } rounded-tr-none`
+                            : `${
+                                darkMode ? "bg-gray-700" : "bg-gray-100"
+                              } rounded-tl-none`
                         }`}
                       >
                         <button
                           onClick={() => copyMessage(m.id)}
-                          className="absolute top-1 right-1 p-1 text-gray-400 hover:text-white transition-colors"
+                          className={`absolute top-1 right-1 p-1 ${
+                            darkMode
+                              ? "text-gray-400 hover:text-white"
+                              : "text-gray-500 hover:text-gray-900"
+                          } transition-colors`}
                           title="Copy message"
                         >
                           <FiCopy size={14} />
                         </button>
-                        <p className="whitespace-pre-wrap text-gray-100 pr-6 text-sm">
+                        <p
+                          className={`whitespace-pre-wrap ${
+                            darkMode ? "text-gray-100" : "text-gray-800"
+                          } pr-6 text-sm`}
+                        >
                           {m.content}
                         </p>
                         {copiedMessageId === m.id && (
-                          <div className="absolute bottom-1 right-1 text-xs text-gray-400">
+                          <div
+                            className={`absolute bottom-1 right-1 text-xs ${
+                              darkMode ? "text-gray-400" : "text-gray-500"
+                            }`}
+                          >
                             Copied!
                           </div>
                         )}
@@ -385,7 +492,11 @@ const UserAssistance = () => {
 
             <form
               onSubmit={handleSubmit}
-              className="border-t border-gray-800 p-4 bg-gray-900"
+              className={`border-t ${
+                darkMode
+                  ? "border-gray-800 bg-gray-900"
+                  : "border-gray-200 bg-gray-50"
+              } p-4`}
             >
               <div className="flex space-x-2">
                 <input
@@ -394,13 +505,25 @@ const UserAssistance = () => {
                   placeholder={`Ask me as ${formatRoleName(
                     selectedRole
                   )} assistant...`}
-                  className="flex-1 bg-gray-800 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-600 border border-gray-700 text-sm"
+                  className={`flex-1 ${
+                    darkMode
+                      ? "bg-gray-800 text-white border-gray-700"
+                      : "bg-white text-gray-900 border-gray-300"
+                  } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${
+                    darkMode ? "focus:ring-blue-600" : "focus:ring-blue-500"
+                  } border text-sm`}
                   disabled={isLoading}
                 />
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="bg-purple-600 hover:bg-purple-700 disabled:bg-gray-700 text-white rounded-lg px-4 py-3 transition-colors flex items-center justify-center w-12"
+                  className={`${
+                    darkMode
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-blue-500 hover:bg-blue-600"
+                  } disabled:${
+                    darkMode ? "bg-gray-700" : "bg-gray-300"
+                  } text-white rounded-lg px-4 py-3 transition-colors flex items-center justify-center w-12`}
                 >
                   {isLoading ? (
                     <span className="animate-spin">↻</span>
@@ -417,6 +540,7 @@ const UserAssistance = () => {
         <ClearChatDialog
           setShowDialog={setShowDialog}
           handleClearChat={handleClearChat}
+          darkMode={darkMode}
         />
       )}
     </div>
