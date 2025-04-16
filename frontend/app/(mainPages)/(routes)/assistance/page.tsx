@@ -434,7 +434,7 @@ const UserAssistance = () => {
                       <div
                         className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${
                           m.role === "user"
-                            ? `${darkMode ? "bg-gray-700" : "bg-gray-300"} ml-4`
+                            ? `${darkMode ? "bg-gray-700" : "bg-gray-400"} ml-4`
                             : `${darkMode ? "bg-blue-600" : "bg-blue-500"} mr-4`
                         }`}
                       >
