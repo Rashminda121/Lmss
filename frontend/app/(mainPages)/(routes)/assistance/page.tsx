@@ -79,7 +79,7 @@ const UserAssistance = () => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [showDialog, setShowDialog] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
 
   // Toggle dark/light mode
   const toggleDarkMode = () => {
