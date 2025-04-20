@@ -1,93 +1,54 @@
 "use client";
 import { useUser } from "@clerk/clerk-react";
 import axios from "axios";
-import { ChangeEvent, useState, useEffect } from "react";
-import { FaArrowRight, FaComments, FaPlus, FaUser } from "react-icons/fa";
-import { FiCalendar } from "react-icons/fi";
-import AddDiscussion from "./components/AddDiscussion";
+import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { FaComments, FaPlus, FaUser } from "react-icons/fa";
+import { FiArrowUpRight, FiCalendar, FiChevronRight } from "react-icons/fi";
 import Swal from "sweetalert2";
+import AddDiscussion from "./components/AddDiscussion";
+import { useRouter } from "next/navigation";
 
 interface Discussion {
-  id: number;
+  _id: string;
+  uid: string;
+  name: string;
   title: string;
-  author: string;
-  date: string;
-  comments: number;
+  description: string;
   category: string;
-  excerpt: string;
+  createdAt: string;
 }
-
-const mockDiscussions: Discussion[] = [
-  {
-    id: 1,
-    title: "How to integrate Firebase with Next.js?",
-    author: "Jane Doe",
-    date: "April 15, 2025",
-    comments: 5,
-    category: "Next.js",
-    excerpt:
-      "Looking for best practices to integrate Firebase authentication and database with a Next.js application...",
-  },
-  {
-    id: 2,
-    title: "Best practices for responsive UI design",
-    author: "John Smith",
-    date: "April 17, 2025",
-    comments: 2,
-    category: "UI/UX",
-    excerpt:
-      "Share your tips and tricks for creating fluid responsive layouts that work across all device sizes... looking for inspiration and examples. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
-  },
-  {
-    id: 3,
-    title: "Deploying React apps on Vercel",
-    author: "Alice Johnson",
-    date: "April 19, 2025",
-    comments: 8,
-    category: "Deployment",
-    excerpt:
-      "Step-by-step guide to deploying your React application on Vercel with optimal configuration...",
-  },
-  {
-    id: 4,
-    title: "Deploying React apps on Vercel",
-    author: "Alice Johnson",
-    date: "April 19, 2025",
-    comments: 8,
-    category: "Deployment",
-    excerpt:
-      "Step-by-step guide to deploying your React application on Vercel with optimal configuration...",
-  },
-  {
-    id: 5,
-    title: "Deploying React apps on Vercel",
-    author: "Alice Johnson",
-    date: "April 19, 2025",
-    comments: 8,
-    category: "Deployment",
-    excerpt:
-      "Step-by-step guide to deploying your React application on Vercel with optimal configuration...",
-  },
-  {
-    id: 6,
-    title: "Deploying React apps on Vercel",
-    author: "Alice Johnson",
-    date: "April 19, 2025",
-    comments: 8,
-    category: "Deployment",
-    excerpt:
-      "Step-by-step guide to deploying your React application on Vercel with optimal configuration...",
-  },
-];
 
 const Discussions = () => {
   const [view, setView] = useState<"all" | "mine">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
 
+  const [data, setData] = useState<Discussion[]>([]);
+
+  const router = useRouter();
+
   const { user } = useUser();
+  const hasFetchedData = useRef(false);
+
+  const getData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/user/listDiscussions"
+      );
+      setData(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error("Error fetching discussions:", error);
+    }
+  };
 
   useEffect(() => {
+    if (!hasFetchedData.current) {
+      getData();
+      hasFetchedData.current = true;
+    }
+
+    // Reset form when modal closes
     if (!isModalOpen) {
       setFormData({
         title: "",
@@ -96,7 +57,7 @@ const Discussions = () => {
         email: user?.emailAddresses[0]?.emailAddress || "",
       });
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, user]);
 
   const [formData, setFormData] = useState({
     title: "",
@@ -114,10 +75,14 @@ const Discussions = () => {
     "Ideas",
   ];
 
-  const filteredDiscussions = mockDiscussions.filter(
+  const userName = user?.fullName || "Unknown User";
+
+  const filteredDiscussions = data.filter(
     (d: Discussion) =>
-      (view === "all" || d.author === "Jane Doe") &&
-      (categoryFilter === "All" || d.category === categoryFilter)
+      (view === "all" || d.name === userName) &&
+      (categoryFilter === "All" ||
+        d.category.charAt(0).toUpperCase() + d.category.slice(1) ===
+          categoryFilter)
   );
 
   const handleInputChange = (
@@ -161,6 +126,7 @@ const Discussions = () => {
       });
 
       setIsModalOpen(false);
+      getData();
       clearForm();
     } catch (error: any) {
       console.error("Failed to submit discussion:", error);
@@ -283,44 +249,63 @@ const Discussions = () => {
             {filteredDiscussions.length > 0 ? (
               filteredDiscussions.map((discussion: Discussion) => (
                 <div
-                  key={discussion.id}
-                  className="bg-white p-4 rounded-lg shadow-sm hover:shadow-md transition duration-200 border border-gray-100"
+                  key={discussion._id}
+                  className="bg-white p-5 rounded-xl shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 hover:border-blue-400"
                 >
-                  <div className="flex flex-col sm:flex-row gap-3">
+                  <div className="flex flex-col sm:flex-row gap-4">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full capitalize">
                           {discussion.category}
                         </span>
                         <span className="text-xs text-gray-500 flex items-center gap-1">
                           <FiCalendar className="text-gray-400" />
-                          {discussion.date}
+                          {
+                            new Date(discussion.createdAt)
+                              .toISOString()
+                              .split("T")[0]
+                          }
                         </span>
                       </div>
-                      <h2 className="text-base sm:text-lg font-semibold text-gray-800 mb-1 hover:text-blue-600 transition">
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition-colors">
                         {discussion.title}
                       </h2>
-                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                        {discussion.excerpt}
+                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                        {discussion.description}
                       </p>
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
-                        <span className="flex items-center gap-1">
+                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                        <span className="flex items-center gap-1.5">
                           <FaUser className="text-gray-400" />
-                          {discussion.author}
+                          <span className="text-gray-700 font-medium">
+                            {discussion.name}
+                          </span>
                         </span>
-                        <span className="flex items-center gap-1">
+                        <span className="flex items-center gap-1.5">
                           <FaComments className="text-gray-400" />
-                          {discussion.comments} comments
+                          <span className="text-gray-700 font-medium">
+                            4 comments
+                          </span>
                         </span>
                       </div>
                     </div>
-                    <button
-                      className="self-center px-3 py-1 text-blue-600 hover:text-white hover:bg-blue-600 rounded-md flex items-center gap-1 border border-blue-100 hover:border-blue-600 transition-colors text-sm"
-                      aria-label="View More"
-                    >
-                      <span>View</span>
-                      <FaArrowRight className="h-3 w-3" />
-                    </button>
+                    <div className="relative self-center">
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `./discussions/viewDiscussion/${discussion._id}`
+                          )
+                        }
+                        className="self-center flex items-center gap-1 px-4 py-2 bg-white text-blue-600 rounded-full border border-gray-200 hover:border-blue-300 shadow-sm hover:shadow-md transition-all duration-500 group hover:-translate-y-1 hover:rotate-1"
+                      >
+                        <span className="text-sm font-medium transition-all duration-500 group-hover:translate-x-1">
+                          Details
+                        </span>
+                        <div className="relative w-4 h-4">
+                          <FiArrowUpRight className="absolute inset-0 opacity-100 group-hover:opacity-0 group-hover:-translate-y-2 transition-all duration-500" />
+                          <FiChevronRight className="absolute inset-0 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-500" />
+                        </div>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))

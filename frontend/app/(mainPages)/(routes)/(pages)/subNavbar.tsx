@@ -87,8 +87,8 @@ const SubNavbar: React.FC = () => {
         {/* Sign in Button in the right corner */}
         <div className="relative hidden sm:block" ref={dropdownRef}>
           <button
-            onClick={() => setIsOpen(!isOpen)}
-            onMouseEnter={() => setIsOpen(true)}
+            onClick={() => setIsOpen((prev) => !prev)}
+            // onMouseEnter={() => !isOpen && setIsOpen(true)}
             className="border border-black text-black text-sm font-semibold p-2 rounded-full flex items-center gap-2 transition-all duration-300"
           >
             <div className="w-8 h-8 rounded-full overflow-hidden">

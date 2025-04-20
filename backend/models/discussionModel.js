@@ -30,6 +30,26 @@ const discussionSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    comments: [
+      {
+        user: {
+          type: String,
+          required: true,
+        },
+        uemail: {
+          type: String,
+          default: null,
+        },
+        text: {
+          type: String,
+          required: true,
+        },
+        date: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
     role: {
       type: String,
       default: "student",

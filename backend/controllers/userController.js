@@ -93,10 +93,47 @@ const addDiscussion = async (req, res) => {
   }
 };
 
+const listDiscussions = async (req, res) => {
+  try {
+    const discussions = await Discussion.find({});
+
+    if (!discussions || discussions.length === 0) {
+      return res.status(404).json({ message: "No discussions found." });
+    }
+
+    res.status(200).json(discussions);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting discussions", error: error.message });
+  }
+};
+const viewDiscussion = async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({ message: "Missing discussion ID." });
+    }
+    const discussion = await Discussion.findOne({ _id: id });
+
+    if (!discussion || discussion.length === 0) {
+      return res.status(404).json({ message: "No discussions found." });
+    }
+
+    res.status(200).json(discussion);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting discussions", error: error.message });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
   updateUser,
   deleteUser,
   addDiscussion,
+  listDiscussions,
+  viewDiscussion,
 };

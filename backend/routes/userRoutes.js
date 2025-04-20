@@ -6,6 +6,8 @@ const {
   updateUser,
   deleteUser,
   addDiscussion,
+  listDiscussions,
+  viewDiscussion,
 } = require("../controllers/userController");
 
 router.get("/userProfile", userProfile);
@@ -15,5 +17,7 @@ router.put("/updateUser", updateUser);
 router.delete("/deleteUser", deleteUser);
 
 router.post("/addDiscussion", addDiscussion);
+router.get("/listDiscussions", listDiscussions);
+router.post("/viewDiscussion", viewDiscussion);
 
 module.exports = router;
