@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Discussion = require("../models/discussionModel");
 
 const userProfile = async (req, res) => {
   try {
@@ -55,6 +56,39 @@ const updateUser = (req, res) => {
 
 const deleteUser = (req, res) => {
   res.send("User deletes the user");
+};
+
+const addDiscussion = async (req, res) => {
+  try {
+    const { uid, title, description, name, email, role } = req.body;
+
+    if (!name || !title || !description || !email || !role) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    // Create a new user
+    const newDiscussion = new Discussion({
+      uid,
+      name,
+      title,
+      description,
+      email,
+      role,
+    });
+    await newDiscussion.save();
+
+    res.status(201).json({ message: "Discussion added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding discussion", error: error.message });
+  }
 };
 
 module.exports = {
