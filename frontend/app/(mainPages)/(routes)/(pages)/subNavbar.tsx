@@ -43,7 +43,7 @@ const SubNavbar: React.FC = () => {
     { name: "About", path: "about" },
     { name: "Discussions", path: "discussions" },
     { name: "Events", path: "events" },
-    { name: "Articles", path: "userArticles" },
+    { name: "Articles", path: "communityArticles" },
     { name: "Contact", path: "#contact" },
   ];
 

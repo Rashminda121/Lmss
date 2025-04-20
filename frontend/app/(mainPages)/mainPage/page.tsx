@@ -67,7 +67,7 @@ const MainPage = () => {
     { icon: Bot, name: "Assistance", href: "./assistance" },
     { icon: MessagesSquare, name: "Discussions", href: "./discussions" },
     { icon: CalendarDays, name: "Events", href: "./events" },
-    { icon: FileText, name: "Articles", href: "./userArticles" },
+    { icon: FileText, name: "Articles", href: "./communityArticles" },
   ];
 
   return (
