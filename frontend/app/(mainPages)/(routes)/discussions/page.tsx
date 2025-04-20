@@ -153,10 +153,10 @@ const Discussions = () => {
         timer: 3000,
         timerProgressBar: true,
         showClass: {
-          popup: "animate__animated animate__bounceInDown", // Bounce in
+          popup: "animate__animated animate__bounceInDown",
         },
         hideClass: {
-          popup: "animate__animated animate__bounceOutUp", // Bounce out
+          popup: "animate__animated animate__bounceOutUp",
         },
       });
 
@@ -179,7 +179,7 @@ const Discussions = () => {
           popup: "animate__animated animate__bounceInDown",
         },
         hideClass: {
-          popup: "animate__animated animate__bounceOutUp", // Bounce out animation
+          popup: "animate__animated animate__bounceOutUp",
         },
       });
     }
