@@ -6,6 +6,10 @@ const discussionSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    uimage: {
+      type: String,
+      default: null,
+    },
     name: {
       type: String,
       default: null,

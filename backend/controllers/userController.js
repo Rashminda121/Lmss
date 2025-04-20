@@ -60,26 +60,28 @@ const deleteUser = (req, res) => {
 
 const addDiscussion = async (req, res) => {
   try {
-    const { uid, title, description, name, email, role } = req.body;
+    const { title, description, email, category } = req.body;
 
-    if (!name || !title || !description || !email || !role) {
+    if (!title || !description || !email) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // Check if user already exists
+    // Check if user exists
     const existingUser = await User.findOne({ email });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
     }
 
-    // Create a new user
+    // Create a new discussion
     const newDiscussion = new Discussion({
-      uid,
-      name,
+      uid: existingUser.uid,
+      uimage: existingUser.image,
+      name: existingUser.name,
+      role: existingUser.role,
       title,
       description,
+      category,
       email,
-      role,
     });
     await newDiscussion.save();
 
@@ -96,4 +98,5 @@ module.exports = {
   addUser,
   updateUser,
   deleteUser,
+  addDiscussion,
 };

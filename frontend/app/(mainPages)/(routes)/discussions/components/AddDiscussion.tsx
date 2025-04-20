@@ -4,7 +4,7 @@ interface AddDiscussionProps {
   setIsModalOpen: (isOpen: boolean) => void;
   handleSubmit: any;
   handleInputChange: any;
-  newDiscussion: { title: string; category: string; content: string };
+  formData: { title: string; category: string; description: string };
   categories: string[];
 }
 
@@ -12,7 +12,7 @@ const AddDiscussion = ({
   setIsModalOpen,
   handleSubmit,
   handleInputChange,
-  newDiscussion,
+  formData,
   categories,
 }: AddDiscussionProps) => {
   return (
@@ -41,7 +41,7 @@ const AddDiscussion = ({
               type="text"
               id="title"
               name="title"
-              value={newDiscussion.title}
+              value={formData.title}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
               placeholder="What's your question or topic?"
@@ -59,31 +59,42 @@ const AddDiscussion = ({
             <select
               id="category"
               name="category"
-              value={newDiscussion.category}
+              value={formData.category || ""}
               onChange={handleInputChange}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
             >
-              {categories
-                .filter((cat) => cat !== "All")
-                .map((cat: string, idx: number) => (
-                  <option key={idx} value={cat}>
-                    {cat}
-                  </option>
-                ))}
+              <option value="" disabled>
+                Select Category
+              </option>
+              <option key={"general"} value={"general"}>
+                General
+              </option>
+              <option key={"courses"} value={"courses"}>
+                Courses
+              </option>
+              <option key={"resources"} value={"resources"}>
+                Resources
+              </option>
+              <option key={"help"} value={"help"}>
+                Help
+              </option>
+              <option key={"ideas"} value={"ideas"}>
+                Ideas
+              </option>
             </select>
           </div>
 
           <div className="mb-4">
             <label
-              htmlFor="content"
+              htmlFor="description"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
               Discussion Content
             </label>
             <textarea
-              id="content"
-              name="content"
-              value={newDiscussion.content}
+              id="description"
+              name="description"
+              value={formData.description}
               onChange={handleInputChange}
               rows={5}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"

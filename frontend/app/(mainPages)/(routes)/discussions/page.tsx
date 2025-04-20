@@ -1,9 +1,11 @@
 "use client";
-import { ChangeEvent, FormEvent, useState } from "react";
+import { useUser } from "@clerk/clerk-react";
+import axios from "axios";
+import { ChangeEvent, useState, useEffect } from "react";
 import { FaArrowRight, FaComments, FaPlus, FaUser } from "react-icons/fa";
 import { FiCalendar } from "react-icons/fi";
 import AddDiscussion from "./components/AddDiscussion";
-import { title } from "process";
+import Swal from "sweetalert2";
 
 interface Discussion {
   id: number;
@@ -13,12 +15,6 @@ interface Discussion {
   comments: number;
   category: string;
   excerpt: string;
-}
-
-interface NewDiscussion {
-  title: string;
-  category: string;
-  content: string;
 }
 
 const mockDiscussions: Discussion[] = [
@@ -40,7 +36,7 @@ const mockDiscussions: Discussion[] = [
     comments: 2,
     category: "UI/UX",
     excerpt:
-      "Share your tips and tricks for creating fluid responsive layouts that work across all device sizes...",
+      "Share your tips and tricks for creating fluid responsive layouts that work across all device sizes... looking for inspiration and examples. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.",
   },
   {
     id: 3,
@@ -88,13 +84,35 @@ const Discussions = () => {
   const [view, setView] = useState<"all" | "mine">("all");
   const [categoryFilter, setCategoryFilter] = useState<string>("All");
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const [newDiscussion, setNewDiscussion] = useState<NewDiscussion>({
+
+  const { user } = useUser();
+
+  useEffect(() => {
+    if (!isModalOpen) {
+      setFormData({
+        title: "",
+        description: "",
+        category: "general",
+        email: user?.emailAddresses[0]?.emailAddress || "",
+      });
+    }
+  }, [isModalOpen]);
+
+  const [formData, setFormData] = useState({
     title: "",
-    category: "Next.js",
-    content: "",
+    description: "",
+    category: "general",
+    email: user?.emailAddresses[0]?.emailAddress || "",
   });
 
-  const categories: string[] = ["All", "Next.js", "UI/UX", "Deployment"];
+  const categories: string[] = [
+    "All",
+    "General",
+    "Courses",
+    "Resources",
+    "Help",
+    "Ideas",
+  ];
 
   const filteredDiscussions = mockDiscussions.filter(
     (d: Discussion) =>
@@ -106,21 +124,74 @@ const Discussions = () => {
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setNewDiscussion((prev) => ({
+    setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    console.log("New discussion:", newDiscussion);
-    setNewDiscussion({
+
+    if (!user?.emailAddresses[0]?.emailAddress) {
+      console.error("No user email found.");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/user/addDiscussion",
+        formData
+      );
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        title: "Discussion added successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown", // Bounce in
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp", // Bounce out
+        },
+      });
+
+      setIsModalOpen(false);
+      clearForm();
+    } catch (error: any) {
+      console.error("Failed to submit discussion:", error);
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title:
+          error.response?.data?.message ||
+          "Failed to submit discussion. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp", // Bounce out animation
+        },
+      });
+    }
+  };
+
+  const clearForm = () => {
+    setFormData({
       title: "",
-      category: "Next.js",
-      content: "",
+      description: "",
+      category: "general",
+      email: user?.emailAddresses[0]?.emailAddress || "",
     });
-    setIsModalOpen(false);
   };
 
   return (
@@ -276,7 +347,7 @@ const Discussions = () => {
           setIsModalOpen={setIsModalOpen}
           handleSubmit={handleSubmit}
           handleInputChange={handleInputChange}
-          newDiscussion={newDiscussion}
+          formData={formData}
           categories={categories}
         />
       )}
