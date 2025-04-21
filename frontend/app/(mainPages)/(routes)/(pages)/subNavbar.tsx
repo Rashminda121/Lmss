@@ -39,11 +39,11 @@ const SubNavbar: React.FC = () => {
   };
 
   const menuItems = [
-    { name: "Home", path: "mainPage" },
-    { name: "About", path: "about" },
-    { name: "Discussions", path: "discussions" },
-    { name: "Events", path: "events" },
-    { name: "Articles", path: "communityArticles" },
+    { name: "Home", path: "/mainPage" },
+    { name: "About", path: "/about" },
+    { name: "Discussions", path: "/discussions" },
+    { name: "Events", path: "/events" },
+    { name: "Articles", path: "/communityArticles" },
     { name: "Contact", path: "#contact" },
   ];
 
