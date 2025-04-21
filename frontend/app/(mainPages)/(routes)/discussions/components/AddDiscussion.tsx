@@ -5,7 +5,8 @@ interface AddDiscussionProps {
   handleSubmit: any;
   handleInputChange: any;
   formData: { title: string; category: string; description: string };
-  categories: string[];
+  isUpdating?: boolean;
+  isAdding?: boolean;
 }
 
 const AddDiscussion = ({
@@ -13,14 +14,16 @@ const AddDiscussion = ({
   handleSubmit,
   handleInputChange,
   formData,
-  categories,
+  isUpdating,
+  isAdding,
 }: AddDiscussionProps) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
           <h2 className="text-xl font-bold text-gray-800">
-            Start New Discussion
+            {(isUpdating && "Update Discussion") ||
+              (isAdding && "Start New Discussion")}
           </h2>
           <button
             onClick={() => setIsModalOpen(false)}
@@ -115,7 +118,8 @@ const AddDiscussion = ({
               type="submit"
               className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm"
             >
-              Post Discussion
+              {(isUpdating && "Update Discussion") ||
+                (isAdding && "Post Discussion")}
             </button>
           </div>
         </form>

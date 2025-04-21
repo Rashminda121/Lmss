@@ -53,7 +53,7 @@ const SubNavbar: React.FC = () => {
   };
 
   const handleProfile = () => {
-    router.push("./userProfile");
+    router.push("/userProfile");
   };
 
   return (

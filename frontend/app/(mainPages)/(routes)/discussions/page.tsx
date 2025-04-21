@@ -333,7 +333,8 @@ const Discussions = () => {
           handleSubmit={handleSubmit}
           handleInputChange={handleInputChange}
           formData={formData}
-          categories={categories}
+          isUpdating={false}
+          isAdding={true}
         />
       )}
     </div>

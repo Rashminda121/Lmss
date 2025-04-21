@@ -93,6 +93,41 @@ const addDiscussion = async (req, res) => {
   }
 };
 
+const updateDiscussion = async (req, res) => {
+  try {
+    const { _id, title, description, category, email } = req.body;
+
+    if (!title || !description || !_id || !category || !email) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const updatedDiscussion = await Discussion.findByIdAndUpdate(
+      _id,
+      {
+        title,
+        description,
+        category,
+        email,
+      },
+      { new: true }
+    );
+
+    if (!updatedDiscussion) {
+      return res.status(404).json({ message: "Discussion not found" });
+    }
+
+    res.status(200).json({
+      message: "Discussion updated successfully",
+      discussion: updatedDiscussion,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating discussion",
+      error: error.message,
+    });
+  }
+};
+
 const listDiscussions = async (req, res) => {
   try {
     const discussions = await Discussion.find({});
@@ -134,6 +169,7 @@ module.exports = {
   updateUser,
   deleteUser,
   addDiscussion,
+  updateDiscussion,
   listDiscussions,
   viewDiscussion,
 };
