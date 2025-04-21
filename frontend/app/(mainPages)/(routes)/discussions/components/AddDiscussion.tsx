@@ -17,6 +17,17 @@ const AddDiscussion = ({
   isUpdating,
   isAdding,
 }: AddDiscussionProps) => {
+  const categoryOptions = [
+    { value: "general", label: "General" },
+    { value: "courses", label: "Courses" },
+    { value: "resources", label: "Resources" },
+    { value: "ideas", label: "Ideas" },
+    { value: "careers", label: "Careers" },
+    { value: "productivity", label: "Productivity" },
+    { value: "tools", label: "Tools" },
+    { value: "projects", label: "Projects" },
+    { value: "support", label: "Support" },
+  ];
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -55,36 +66,43 @@ const AddDiscussion = ({
           <div className="mb-4">
             <label
               htmlFor="category"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-gray-600 mb-1"
             >
               Category
             </label>
-            <select
-              id="category"
-              name="category"
-              value={formData.category || ""}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-sm"
-            >
-              <option value="" disabled>
-                Select Category
-              </option>
-              <option key={"general"} value={"general"}>
-                General
-              </option>
-              <option key={"courses"} value={"courses"}>
-                Courses
-              </option>
-              <option key={"resources"} value={"resources"}>
-                Resources
-              </option>
-              <option key={"support"} value={"support"}>
-                Support
-              </option>
-              <option key={"ideas"} value={"ideas"}>
-                Ideas
-              </option>
-            </select>
+            <div className="relative">
+              <select
+                id="category"
+                name="category"
+                value={formData.category || ""}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 text-sm text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm  focus:ring-blue-500 focus:border-blue-500 appearance-none"
+              >
+                <option value="" disabled>
+                  Select a category
+                </option>
+                {categoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                <svg
+                  className="w-5 h-5 text-gray-400"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
+            </div>
           </div>
 
           <div className="mb-4">

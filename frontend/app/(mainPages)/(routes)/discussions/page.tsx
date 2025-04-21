@@ -70,8 +70,12 @@ const Discussions = () => {
     "General",
     "Courses",
     "Resources",
-    "Support",
     "Ideas",
+    "Careers",
+    "Productivity",
+    "Tools",
+    "Projects",
+    "Support",
   ];
 
   const userName = user?.fullName || "Unknown User";
