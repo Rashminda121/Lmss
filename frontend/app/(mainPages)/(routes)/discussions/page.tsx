@@ -36,7 +36,6 @@ const Discussions = () => {
         "http://localhost:4000/user/listDiscussions"
       );
       setData(response.data);
-      console.log(response.data);
     } catch (error) {
       console.error("Error fetching discussions:", error);
     }
@@ -71,7 +70,7 @@ const Discussions = () => {
     "General",
     "Courses",
     "Resources",
-    "Help",
+    "Support",
     "Ideas",
   ];
 
@@ -267,10 +266,10 @@ const Discussions = () => {
                           }
                         </span>
                       </div>
-                      <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition-colors">
+                      <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 hover:text-blue-600 transition-colors duration-300 cursor-pointer">
                         {discussion.title}
                       </h2>
-                      <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                      <p className="first-letter:uppercase text-sm text-gray-600 mb-4 line-clamp-2">
                         {discussion.description}
                       </p>
                       <div className="flex items-center gap-4 text-sm text-gray-500">

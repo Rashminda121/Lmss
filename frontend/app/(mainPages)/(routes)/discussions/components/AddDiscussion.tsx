@@ -78,8 +78,8 @@ const AddDiscussion = ({
               <option key={"resources"} value={"resources"}>
                 Resources
               </option>
-              <option key={"help"} value={"help"}>
-                Help
+              <option key={"support"} value={"support"}>
+                Support
               </option>
               <option key={"ideas"} value={"ideas"}>
                 Ideas

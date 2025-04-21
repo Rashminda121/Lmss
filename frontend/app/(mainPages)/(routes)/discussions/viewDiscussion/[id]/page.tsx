@@ -3,8 +3,9 @@ import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import { useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
-import { FiEdit2 } from "react-icons/fi";
+import { FiEdit2, FiTrash2 } from "react-icons/fi";
 import AddDiscussion from "../../components/AddDiscussion";
+import { useRouter } from "next/navigation";
 
 interface ViewDiscussionProps {
   params: {
@@ -39,6 +40,8 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
     category: "general",
     email: user?.emailAddresses[0]?.emailAddress || "",
   });
+
+  const router = useRouter();
 
   const getData = async () => {
     try {
@@ -122,8 +125,6 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
   const handleupdateSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    console.log("Form Data:", formData);
-
     try {
       const response = await axios.post(
         "http://localhost:4000/user/updateDiscussion",
@@ -156,7 +157,7 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
       getData();
       clearForm();
     } catch (error: any) {
-      console.error("Failed to submit discussion:", error);
+      console.error("Failed to update discussion:", error);
 
       Swal.fire({
         toast: true,
@@ -206,57 +207,106 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
     "Ideas",
   ];
 
+  const handleDelete = async () => {
+    try {
+      const response = await axios.delete(
+        "http://localhost:4000/user/deleteDiscussion",
+        {
+          data: { id },
+        }
+      );
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        title: "Discussion deleted successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+
+      setIsModalOpen(false);
+      clearForm();
+      router.push("/discussions");
+    } catch (error: any) {
+      console.error("Failed to delete discussion:", error);
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title:
+          error.response?.data?.message ||
+          "Failed to delete discussion. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
       {/* Main Content Card */}
       <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
         {/* Title with Edit Button */}
-        <div className="flex justify-between items-start mb-2">
-          <div className="flex items-center gap-3 flex-wrap">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white pr-4 capitalize">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white pr-2 sm:pr-4 capitalize break-words max-w-full">
               {data.title || "Untitled Discussion"}
             </h1>
-            <span className="px-3 py-1 mb-1 md:mb-0 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full capitalize whitespace-nowrap">
+            <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-200 text-xs font-medium rounded-full capitalize whitespace-nowrap">
               {data.category}
             </span>
           </div>
+
           {isAuthor && (
-            <div className="relative inline-block group">
+            <div className="flex gap-2 sm:gap-3">
               <button
                 onClick={() => setIsModalOpen(true)}
                 type="button"
                 className="
-          flex items-center justify-center
-          w-10 h-10 rounded-xl
-          bg-white dark:bg-gray-800
-          border border-gray-200 dark:border-gray-700
-          text-gray-600 dark:text-gray-400
-          hover:text-blue-600 dark:hover:text-blue-400
-          shadow-sm hover:shadow-md
-          transition-all duration-300
-          hover:-translate-y-0.5
-          active:translate-y-0
-          focus:outline-none focus:ring-2 focus:ring-blue-500/50
+          w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center
+          rounded-md border border-gray-300 dark:border-gray-600
+          transition-all duration-200
+          hover:shadow-sm hover:scale-105 
+          hover:bg-blue-600 hover:text-white hover:border-blue-600
+          dark:hover:bg-blue-700 dark:hover:border-blue-700
+          focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2
         "
+                aria-label="Edit"
               >
                 <FiEdit2 size={18} />
               </button>
-              <div
+              <button
+                onClick={() => handleDelete()}
+                type="button"
                 className="
-          absolute -top-9 left-1/2 -translate-x-1/2
-          px-2 py-1 text-xs font-medium
-          bg-gray-800 text-white rounded
-          opacity-0 group-hover:opacity-100
-          transition-opacity duration-200
-          pointer-events-none
-          whitespace-nowrap
-          before:absolute before:top-full before:left-1/2 
-          before:-translate-x-1/2 before:border-4 
-          before:border-transparent before:border-t-gray-800
+          w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center
+          rounded-md border border-gray-300 dark:border-gray-600
+          transition-all duration-200
+          hover:shadow-sm hover:scale-105 
+          hover:bg-red-600 hover:text-white hover:border-red-600
+          dark:hover:bg-red-700 dark:hover:border-red-700
+          focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2
         "
+                aria-label="Delete"
               >
-                Edit Post
-              </div>
+                <FiTrash2 size={18} />
+              </button>
             </div>
           )}
         </div>

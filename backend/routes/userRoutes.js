@@ -9,6 +9,7 @@ const {
   listDiscussions,
   viewDiscussion,
   updateDiscussion,
+  deleteDiscussion,
 } = require("../controllers/userController");
 
 router.get("/userProfile", userProfile);
@@ -19,6 +20,7 @@ router.delete("/deleteUser", deleteUser);
 
 router.post("/addDiscussion", addDiscussion);
 router.post("/updateDiscussion", updateDiscussion);
+router.delete("/deleteDiscussion", deleteDiscussion);
 router.get("/listDiscussions", listDiscussions);
 router.post("/viewDiscussion", viewDiscussion);
 

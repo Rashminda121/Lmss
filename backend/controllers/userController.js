@@ -128,6 +128,28 @@ const updateDiscussion = async (req, res) => {
   }
 };
 
+const deleteDiscussion = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedDiscussion = await Discussion.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Discussion deleted successfully",
+      discussion: deletedDiscussion,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting discussion",
+      error: error.message,
+    });
+  }
+};
+
 const listDiscussions = async (req, res) => {
   try {
     const discussions = await Discussion.find({});
@@ -170,6 +192,7 @@ module.exports = {
   deleteUser,
   addDiscussion,
   updateDiscussion,
+  deleteDiscussion,
   listDiscussions,
   viewDiscussion,
 };
