@@ -1,5 +1,6 @@
 const User = require("../models/userModel");
 const Discussion = require("../models/discussionModel");
+const Event = require("../models/eventModel");
 
 const userProfile = async (req, res) => {
   try {
@@ -185,6 +186,63 @@ const viewDiscussion = async (req, res) => {
   }
 };
 
+const addEvent = async (req, res) => {
+  try {
+    const {
+      uid,
+      title,
+      date,
+      location,
+      description,
+      category,
+      type,
+      url,
+      image,
+    } = req.body;
+
+    const requiredFields = [
+      uid,
+      title,
+      date,
+      location,
+      description,
+      category,
+      type,
+      image,
+    ];
+
+    if (requiredFields.some((field) => !field)) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ uid: uid });
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Create a new event
+    const newEvent = new Event({
+      uid,
+      title,
+      date,
+      location,
+      description,
+      category,
+      type,
+      url,
+      image,
+    });
+    await newEvent.save();
+
+    res.status(201).json({ message: "Event added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding event", error: error.message });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -195,4 +253,5 @@ module.exports = {
   deleteDiscussion,
   listDiscussions,
   viewDiscussion,
+  addEvent,
 };

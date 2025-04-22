@@ -10,6 +10,7 @@ const {
   viewDiscussion,
   updateDiscussion,
   deleteDiscussion,
+  addEvent,
 } = require("../controllers/userController");
 
 router.get("/userProfile", userProfile);
@@ -23,5 +24,7 @@ router.post("/updateDiscussion", updateDiscussion);
 router.delete("/deleteDiscussion", deleteDiscussion);
 router.get("/listDiscussions", listDiscussions);
 router.post("/viewDiscussion", viewDiscussion);
+
+router.post("/addEvent", addEvent);
 
 module.exports = router;
