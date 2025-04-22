@@ -243,6 +243,22 @@ const addEvent = async (req, res) => {
   }
 };
 
+const listEvents = async (req, res) => {
+  try {
+    const events = await Event.find({});
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ message: "No events found." });
+    }
+
+    res.status(200).json(events);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting events", error: error.message });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -254,4 +270,5 @@ module.exports = {
   listDiscussions,
   viewDiscussion,
   addEvent,
+  listEvents,
 };

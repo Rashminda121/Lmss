@@ -11,6 +11,7 @@ const {
   updateDiscussion,
   deleteDiscussion,
   addEvent,
+  listEvents,
 } = require("../controllers/userController");
 
 router.get("/userProfile", userProfile);
@@ -26,5 +27,6 @@ router.get("/listDiscussions", listDiscussions);
 router.post("/viewDiscussion", viewDiscussion);
 
 router.post("/addEvent", addEvent);
+router.get("/listEvents", listEvents);
 
 module.exports = router;

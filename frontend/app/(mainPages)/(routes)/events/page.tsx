@@ -1,77 +1,9 @@
 "use client";
-import React, { useState, useEffect, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
-import Swal from "sweetalert2";
 import axios from "axios";
-
-const allEvents = [
-  {
-    id: 1,
-    uid: 1,
-    title: "Tech Conference 2025",
-    date: "2025-04-25",
-    location: "Colombo, Sri Lanka",
-    description: "Advancements in AI, Cloud, and DevOps strategies.",
-    category: "Conference",
-    type: "On-site",
-    image: "https://source.unsplash.com/featured/?conference,technology",
-  },
-  {
-    id: 2,
-    uid: 2,
-    title: "Startup Innovation Expo",
-    date: "2025-05-10",
-    location: "NSBM Auditorium",
-    description: "Showcase innovations and engage with investors.",
-    category: "Expo",
-    type: "On-site",
-    image: "https://source.unsplash.com/featured/?startup,business",
-  },
-  {
-    id: 3,
-    uid: 3,
-    title: "Global Hackathon 2025",
-    date: "2025-06-02",
-    location: "Virtual",
-    description: "24-hour global hackathon to solve real-world challenges.",
-    category: "Hackathon",
-    type: "Online",
-    image: "https://source.unsplash.com/featured/?coding,hackathon",
-  },
-  {
-    id: 4,
-    uid: 4,
-    title: "Campus Meetup",
-    date: "2025-07-15",
-    location: "University Grounds",
-    description: "Networking for students and faculty.",
-    category: "General",
-    type: "On-site",
-    image: "https://source.unsplash.com/featured/?community,event",
-  },
-  {
-    id: 5,
-    uid: 5,
-    title: "AI Workshop Series",
-    date: "2025-05-18",
-    location: "Colombo Innovation Tower",
-    description: "Hands-on workshops on machine learning and neural networks.",
-    category: "Workshop",
-    type: "On-site",
-    image: "https://source.unsplash.com/featured/?ai,workshop",
-  },
-  {
-    id: 6,
-    uid: 6,
-    title: "Digital Marketing Summit",
-    date: "2025-06-22",
-    location: "Virtual",
-    description: "Learn the latest trends in digital marketing strategies.",
-    category: "Conference",
-    type: "Online",
-    image: "https://source.unsplash.com/featured/?marketing,digital",
-  },
-];
+import React, { useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
+import { useRouter } from "next/navigation";
 
 const categories = [
   "All",
@@ -101,8 +33,14 @@ const months = [
 
 const types = ["All", "Online", "On-site", "Hybrid"];
 
-const getMonthFromDate = (dateStr: string): string => {
-  const monthIndex = new Date(dateStr).getMonth();
+const getMonthFromDate = (dateInput: Date | string): string => {
+  const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
+
+  if (isNaN(date.getTime())) {
+    throw new Error("Invalid date provided to getMonthFromDate");
+  }
+
+  const monthIndex = date.getMonth();
   return [
     "January",
     "February",
@@ -119,6 +57,20 @@ const getMonthFromDate = (dateStr: string): string => {
   ][monthIndex];
 };
 
+interface Event {
+  _id: string;
+  uid: string;
+  title: string;
+  date: Date;
+  location: string;
+  coordinates: object;
+  description: string;
+  category: string;
+  type: string;
+  url: string;
+  image: string;
+}
+
 const Events = () => {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedMonth, setSelectedMonth] = useState("All");
@@ -128,15 +80,19 @@ const Events = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [data, setData] = useState<Event[]>([]);
 
   const { user } = useUser();
+  const hasFetchedData = useRef(false);
+
+  const router = useRouter();
 
   const [formData, setFormData] = useState({
     uid: user?.id || "",
     title: "",
     date: "",
     location: "",
-    coordinates: "",
+    coordinates: {},
     description: "",
     category: "",
     type: "",
@@ -144,14 +100,28 @@ const Events = () => {
     image: "",
   });
 
+  const getData = async () => {
+    try {
+      const response = await axios.get("http://localhost:4000/user/listEvents");
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching discussions:", error);
+    }
+  };
+
   useEffect(() => {
+    if (!hasFetchedData.current) {
+      getData();
+      hasFetchedData.current = true;
+    }
+
     if (!isModalOpen) {
       setFormData({
         uid: user?.id || "",
         title: "",
         date: "",
         location: "",
-        coordinates: "",
+        coordinates: {},
         description: "",
         category: "",
         type: "",
@@ -160,16 +130,19 @@ const Events = () => {
       });
       setImagePreview(null);
     }
-    console.log(user?.id);
   }, [isModalOpen, user]);
 
-  const filteredEvents = allEvents.filter((event) => {
+  const filteredEvents = data.filter((event) => {
     const matchesCategory =
       selectedCategory === "All" || event.category === selectedCategory;
     const matchesMonth =
       selectedMonth === "All" || getMonthFromDate(event.date) === selectedMonth;
     const matchesType = selectedType === "All" || event.type === selectedType;
-    const matchesDate = !selectedDate || event.date === selectedDate;
+    const matchesDate =
+      !selectedDate ||
+      new Date(event.date).toISOString().split("T")[0] ===
+        new Date(selectedDate).toISOString().split("T")[0];
+
     const matchesSearch =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       event.description.toLowerCase().includes(searchQuery.toLowerCase());
@@ -305,6 +278,8 @@ const Events = () => {
       });
 
       setIsModalOpen(false);
+      getData();
+      clearForm();
     } catch (error: any) {
       console.error("Failed to submit event:", error);
       Swal.fire({
@@ -318,6 +293,21 @@ const Events = () => {
         timer: 3000,
       });
     }
+  };
+
+  const clearForm = () => {
+    setFormData({
+      uid: user?.id || "",
+      title: "",
+      date: "",
+      location: "",
+      coordinates: {},
+      description: "",
+      category: "",
+      type: "",
+      url: "",
+      image: "",
+    });
   };
 
   return (
@@ -386,20 +376,49 @@ const Events = () => {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Filters Sidebar */}
           <div className="lg:w-1/4 space-y-6">
-            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg
+                  className="w-5 h-5 mr-2 text-blue-500"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"
+                  />
+                </svg>
                 Filters
               </h2>
 
               <div className="space-y-5">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                {/* Category Filter */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-600 mb-1 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                      />
+                    </svg>
                     Category
                   </label>
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
                     {categories.map((cat) => (
                       <option key={cat} value={cat}>
@@ -409,14 +428,29 @@ const Events = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                {/* Month Filter */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-600 mb-1 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
                     Month
                   </label>
                   <select
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
-                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
                     {months.map((month) => (
                       <option key={month} value={month}>
@@ -426,14 +460,29 @@ const Events = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                {/* Event Type Filter */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-600 mb-1 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 10V3L4 14h7v7l9-11h-7z"
+                      />
+                    </svg>
                     Event Type
                   </label>
                   <select
                     value={selectedType}
                     onChange={(e) => setSelectedType(e.target.value)}
-                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   >
                     {types.map((type) => (
                       <option key={type} value={type}>
@@ -443,22 +492,52 @@ const Events = () => {
                   </select>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                {/* Date Filter */}
+                <div className="space-y-1">
+                  <label className="block text-sm font-medium text-gray-600 mb-1 flex items-center">
+                    <svg
+                      className="w-4 h-4 mr-1 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
                     Specific Date
                   </label>
                   <input
                     type="date"
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full rounded-lg px-4 py-2 bg-gray-50 border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                   />
                 </div>
 
+                {/* Reset Button */}
                 <button
                   onClick={resetFilters}
-                  className="w-full mt-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                  className="w-full mt-4 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium flex items-center justify-center group"
                 >
+                  <svg
+                    className="w-5 h-5 mr-2 text-gray-500 group-hover:text-gray-700 transition-colors"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                    />
+                  </svg>
                   Reset Filters
                 </button>
               </div>
@@ -477,8 +556,8 @@ const Events = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 overflow-y-auto max-h-screen pb-20">
                 {filteredEvents.map((event) => (
                   <div
-                    key={event.id}
-                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100"
+                    key={event._id}
+                    className="bg-white rounded-xl shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden border border-gray-100 flex flex-col"
                   >
                     <div className="relative h-48">
                       <img
@@ -492,7 +571,7 @@ const Events = () => {
                         </span>
                       </div>
                     </div>
-                    <div className="p-5">
+                    <div className="p-5 flex-1 flex flex-col">
                       <div className="flex justify-between items-start mb-2 gap-2">
                         <h3 className="text-lg font-bold text-gray-900 flex-1 min-w-0">
                           {event.title}
@@ -501,6 +580,8 @@ const Events = () => {
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                             event.type === "Online"
                               ? "bg-purple-100 text-purple-800"
+                              : event.type === "On-site"
+                              ? "bg-blue-100 text-blue-800"
                               : "bg-green-100 text-green-800"
                           }`}
                         >
@@ -518,7 +599,7 @@ const Events = () => {
                       <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                         {event.description}
                       </p>
-                      <div className="flex items-center text-sm text-gray-500">
+                      <div className="flex items-center text-sm text-gray-500 mb-4">
                         <svg
                           className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400"
                           fill="none"
@@ -540,6 +621,16 @@ const Events = () => {
                           />
                         </svg>
                         {event.location}
+                      </div>
+                      <div className="mt-auto pt-4">
+                        <button
+                          onClick={() =>
+                            router.push(`./events/viewEvent/${event._id}`)
+                          }
+                          className="w-full bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium py-2 px-4 rounded-lg transition-all duration-200 ease-in-out"
+                        >
+                          View Details
+                        </button>
                       </div>
                     </div>
                   </div>
@@ -633,8 +724,12 @@ const Events = () => {
                       <input
                         type="date"
                         name="date"
-                        value={formData.date || Date.now()}
+                        value={
+                          formData.date ||
+                          new Date().toISOString().split("T")[0]
+                        }
                         onChange={handleInputChange}
+                        min={new Date().toISOString().split("T")[0]}
                         required
                         className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                       />
@@ -734,7 +829,7 @@ const Events = () => {
                           <img
                             src={imagePreview || ""}
                             alt="Preview"
-                            className="h-full w-full object-cover rounded-lg"
+                            className="h-full w-full object-contain rounded-lg"
                           />
                         ) : (
                           <svg
