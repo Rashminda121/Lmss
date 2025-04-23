@@ -1,3 +1,3 @@
-export const isTeacher = (userId?: string | null) => {
-  return userId === process.env.NEXT_PUBLIC_TEACHER_ID;
+export const isLecturer = (userRole?: string | null) => {
+  return userRole === "lecturer" || userRole === "admin";
 };
