@@ -166,6 +166,7 @@ const listDiscussions = async (req, res) => {
       .json({ message: "Error getting discussions", error: error.message });
   }
 };
+
 const viewDiscussion = async (req, res) => {
   try {
     const { id } = req.body;
@@ -192,6 +193,7 @@ const addEvent = async (req, res) => {
       uid,
       title,
       date,
+      time,
       location,
       description,
       category,
@@ -226,6 +228,7 @@ const addEvent = async (req, res) => {
       uid,
       title,
       date,
+      time,
       location,
       description,
       category,
@@ -259,6 +262,119 @@ const listEvents = async (req, res) => {
   }
 };
 
+const viewEvent = async (req, res) => {
+  try {
+    const { id } = req.body;
+    if (!id) {
+      return res.status(400).json({ message: "Missing event ID." });
+    }
+    const event = await Event.findOne({ _id: id });
+
+    if (!event || event.length === 0) {
+      return res.status(404).json({ message: "No events found." });
+    }
+
+    res.status(200).json(event);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting events", error: error.message });
+  }
+};
+
+const updateEvent = async (req, res) => {
+  try {
+    const {
+      _id,
+      title,
+      date,
+      location,
+      coordinates,
+      description,
+      category,
+      type,
+      url,
+      image,
+    } = req.body;
+
+    // Validate required fields
+    if (
+      !_id ||
+      !title ||
+      !date ||
+      !location ||
+      !description ||
+      !category ||
+      !type
+    ) {
+      return res.status(400).json({
+        message: "Missing required fields.",
+      });
+    }
+
+    // Validate date format if needed
+    if (isNaN(new Date(date).getTime())) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    // Prepare update object
+    const updateData = {
+      title,
+      date: new Date(date),
+      location,
+      coordinates: coordinates || {},
+      description,
+      category,
+      type,
+      url: url || "",
+      image: image || "",
+      updatedAt: new Date(),
+    };
+
+    const updatedEvent = await Event.findByIdAndUpdate(_id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updatedEvent) {
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    res.status(200).json({
+      message: "Event updated successfully",
+      event: updatedEvent,
+    });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({
+      message: "Error updating event",
+      error: error.message,
+    });
+  }
+};
+
+const deleteEvent = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedEvent = await Event.findByIdAndDelete(id);
+
+    res.status(200).json({
+      message: "Event deleted successfully",
+      event: deletedEvent,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting event",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -271,4 +387,7 @@ module.exports = {
   viewDiscussion,
   addEvent,
   listEvents,
+  viewEvent,
+  updateEvent,
+  deleteEvent,
 };
