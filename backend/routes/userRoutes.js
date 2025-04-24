@@ -16,6 +16,9 @@ const {
   updateEvent,
   deleteEvent,
   addComment,
+  viewComments,
+  editComment,
+  deleteComment,
 } = require("../controllers/userController");
 
 router.get("/userProfile", userProfile);
@@ -37,5 +40,8 @@ router.put("/updateEvent", updateEvent);
 router.delete("/deleteEvent", deleteEvent);
 
 router.post("/addComment", addComment);
+router.post("/viewComments", viewComments);
+router.post("/editComment", editComment);
+router.delete("/deleteComment", deleteComment);
 
 module.exports = router;

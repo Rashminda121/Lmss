@@ -403,6 +403,88 @@ const addComment = async (req, res) => {
   }
 };
 
+const viewComments = async (req, res) => {
+  try {
+    const { disid } = req.body;
+
+    if (!disid) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const comments = await DisComment.find({ disid });
+
+    if (!comments || comments.length === 0) {
+      return res.status(404).json({ message: "No comments found." });
+    }
+
+    res.status(200).json(comments);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting comments", error: error.message });
+  }
+};
+
+const editComment = async (req, res) => {
+  try {
+    const { _id, description } = req.body;
+
+    // Validate required fields
+    if (!_id || !description) {
+      return res.status(400).json({
+        message: "Missing required fields.",
+      });
+    }
+
+    // Prepare update object
+    const updateData = {
+      description,
+    };
+
+    const updateComment = await DisComment.findByIdAndUpdate(_id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!updateComment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    res.status(200).json({
+      message: "Comment updated successfully",
+      Comment: updateComment,
+    });
+  } catch (error) {
+    console.error("Error updating comment:", error);
+    res.status(500).json({
+      message: "Error updating comment",
+      error: error.message,
+    });
+  }
+};
+
+const deleteComment = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedComment = await DisComment.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+      comment: deletedComment,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting comment",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -419,4 +501,7 @@ module.exports = {
   updateEvent,
   deleteEvent,
   addComment,
+  viewComments,
+  editComment,
+  deleteComment,
 };
