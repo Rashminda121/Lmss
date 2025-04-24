@@ -1,6 +1,7 @@
 const User = require("../models/userModel");
 const Discussion = require("../models/discussionModel");
 const Event = require("../models/eventModel");
+const DisComment = require("../models/discussionCommentsModel");
 
 const userProfile = async (req, res) => {
   try {
@@ -375,6 +376,33 @@ const deleteEvent = async (req, res) => {
   }
 };
 
+const addComment = async (req, res) => {
+  try {
+    const { disid, uid, uimage, name, description, email } = req.body;
+
+    if (!disid || !description) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Create a new comment
+    const newComment = new DisComment({
+      disid,
+      uid,
+      uimage,
+      name,
+      description,
+      email,
+    });
+    await newComment.save();
+
+    res.status(201).json({ message: "Comment added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding comment", error: error.message });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -390,4 +418,5 @@ module.exports = {
   viewEvent,
   updateEvent,
   deleteEvent,
+  addComment,
 };

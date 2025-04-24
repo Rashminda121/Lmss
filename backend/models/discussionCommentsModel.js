@@ -4,7 +4,7 @@ const disCommentSchema = new mongoose.Schema(
   {
     disid: {
       type: String,
-      default: required,
+      default: null,
     },
     uid: {
       type: String,
@@ -28,7 +28,7 @@ const disCommentSchema = new mongoose.Schema(
     },
     status: {
       type: Boolean,
-      default: null,
+      default: true,
     },
   },
   {

@@ -41,6 +41,15 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
     email: user?.emailAddresses[0]?.emailAddress || "",
   });
 
+  const [comment, setComment] = useState({
+    disid: id,
+    uid: user?.id,
+    uimage: user?.imageUrl,
+    name: user?.fullName,
+    description: "",
+    email: user?.primaryEmailAddress?.emailAddress,
+  });
+
   const router = useRouter();
 
   const getData = async () => {
@@ -272,8 +281,82 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
     }
   };
 
-  const handleCommentSubmit = () => {};
-  const handleInputCommentChange = () => {};
+  const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/user/addComment",
+        {
+          disid: id,
+          uid: user?.id,
+          uimage: user?.imageUrl,
+          name: user?.fullName,
+          description: comment.description,
+          email: user?.primaryEmailAddress?.emailAddress,
+        }
+      );
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        title: "Comment added successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+
+      //getCommentData();
+      clearCommentForm();
+    } catch (error: any) {
+      console.error("Failed to update discussion:", error);
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title:
+          error.response?.data?.message ||
+          "Failed to add comment. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+    }
+  };
+  const handleInputCommentChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setComment((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const clearCommentForm = () => {
+    setComment({
+      disid: id,
+      uid: user?.id,
+      uimage: user?.imageUrl,
+      name: user?.fullName,
+      description: "",
+      email: user?.primaryEmailAddress?.emailAddress,
+    });
+  };
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
@@ -405,8 +488,10 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
           <form onSubmit={handleCommentSubmit}>
             <textarea
               className="w-full px-4 py-3 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              name="description"
               rows={3}
               onChange={handleInputCommentChange}
+              value={comment.description || ""}
               placeholder="Share your thoughts..."
             />
             <div className="flex justify-end mt-3">
