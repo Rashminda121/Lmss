@@ -209,32 +209,46 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
   const handleDelete = async () => {
     try {
-      const response = await axios.delete(
-        "http://localhost:4000/user/deleteDiscussion",
-        {
-          data: { id },
-        }
-      );
-
-      Swal.fire({
-        toast: true,
-        position: "top",
-        icon: "success",
-        title: "Discussion deleted successfully!",
-        showConfirmButton: false,
-        timer: 3000,
-        timerProgressBar: true,
-        showClass: {
-          popup: "animate__animated animate__bounceInDown",
-        },
-        hideClass: {
-          popup: "animate__animated animate__bounceOutUp",
-        },
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
       });
 
-      setIsModalOpen(false);
-      clearForm();
-      router.push("/discussions");
+      if (result.isConfirmed) {
+        const response = await axios.delete(
+          "http://localhost:4000/user/deleteDiscussion",
+          {
+            data: { id },
+          }
+        );
+
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "success",
+          title: "Discussion deleted successfully!",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          showClass: {
+            popup: "animate__animated animate__bounceInDown",
+          },
+          hideClass: {
+            popup: "animate__animated animate__bounceOutUp",
+          },
+        });
+
+        setIsModalOpen(false);
+        clearForm();
+        router.push("/discussions");
+      }
     } catch (error: any) {
       console.error("Failed to delete discussion:", error);
 
@@ -257,6 +271,9 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
       });
     }
   };
+
+  const handleCommentSubmit = () => {};
+  const handleInputCommentChange = () => {};
 
   return (
     <div className="max-w-3xl mx-auto p-6 space-y-6">
@@ -385,16 +402,22 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
         {/* Comment Form */}
         <div className="p-6 border-b border-gray-100 dark:border-gray-700">
-          <textarea
-            className="w-full px-4 py-3 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
-            rows={3}
-            placeholder="Share your thoughts..."
-          />
-          <div className="flex justify-end mt-3">
-            <button className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-              Post Comment
-            </button>
-          </div>
+          <form onSubmit={handleCommentSubmit}>
+            <textarea
+              className="w-full px-4 py-3 text-sm border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
+              rows={3}
+              onChange={handleInputCommentChange}
+              placeholder="Share your thoughts..."
+            />
+            <div className="flex justify-end mt-3">
+              <button
+                type="submit"
+                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200"
+              >
+                Post Comment
+              </button>
+            </div>
+          </form>
         </div>
 
         {/* Comments List */}
