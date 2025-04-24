@@ -77,8 +77,12 @@ export const NavbarRoutes = () => {
           </Link>
         ) : checkLecturer ? (
           <Link href="/teacher/courses">
-            <Button size="sm" className="text-xs md:text-sm" variant="ghost">
-              Teacher Mode
+            <Button
+              size="sm"
+              className="text-xs md:text-sm border border-gray-200 hover:text-white hover:bg-blue-700 hover:shadow-md rounded-md"
+              variant="ghost"
+            >
+              Lecturer Mode
             </Button>
           </Link>
         ) : null}
