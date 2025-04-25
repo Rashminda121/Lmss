@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useUser } from "@clerk/nextjs";
 import axios from "axios";
 import Swal from "sweetalert2";
+import Calendar from "react-calendar";
+import "react-calendar/dist/Calendar.css";
 
 interface ViewEventProps {
   params: {
@@ -77,6 +79,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
     _id: "",
     description: "",
   });
+  const [showShareOptions, setShowShareOptions] = useState(false);
 
   const [formData, setFormData] = useState({
     _id: id,
@@ -184,7 +187,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
       }));
       setImagePreview(response.data.image);
 
-      console.log(response.data)
+      console.log(response.data);
       //await fetchComments();
     } catch (error: any) {
       Swal.fire({
@@ -510,6 +513,50 @@ export default function ViewEvent({ params }: ViewEventProps) {
     setUpdatedText({ _id: "", description: "" });
   };
 
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    Swal.fire({
+      toast: true,
+      position: "top",
+      icon: "success",
+      title: "Link copied to clipboard!",
+      showConfirmButton: false,
+      timer: 2000,
+    });
+  };
+
+  const generateGoogleCalendarLink = () => {
+    if (!data) return "";
+    const eventDate = new Date(data.date);
+    const formattedDate = eventDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+    const endDate = new Date(eventDate.getTime() + 60 * 60 * 1000); // Add 1 hour
+    const formattedEndDate = endDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+    return `https://www.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+      data.title
+    )}&dates=${formattedDate}/${formattedEndDate}&details=${encodeURIComponent(
+      data.description
+    )}&location=${encodeURIComponent(data.location)}&sf=true&output=xml`;
+  };
+
+  const generateICalendarLink = () => {
+    if (!data) return "";
+    const eventDate = new Date(data.date);
+    const formattedDate = eventDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+
+    return `data:text/calendar;charset=utf8,BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+URL:${window.location.href}
+DTSTART:${formattedDate}
+DTEND:${formattedDate}
+SUMMARY:${data.title}
+DESCRIPTION:${data.description}
+LOCATION:${data.location}
+END:VEVENT
+END:VCALENDAR`;
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -567,8 +614,8 @@ export default function ViewEvent({ params }: ViewEventProps) {
       month: "short",
       day: "numeric",
       year: "numeric",
-      // hour: "2-digit",
-      // minute: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
     });
   };
 
@@ -708,11 +755,11 @@ export default function ViewEvent({ params }: ViewEventProps) {
                   </div>
                 </div>
                 {/* Map placeholder */}
-                <div className="h-48 sm:h-64 bg-gray-200 rounded-lg flex items-center justify-center">
+                {/* <div className="h-48 sm:h-64 bg-gray-200 rounded-lg flex items-center justify-center">
                   <p className="text-gray-500 text-sm sm:text-base">
                     Map of {data.location}
                   </p>
-                </div>
+                </div> */}
               </div>
 
               {/* Comments Section */}
@@ -861,7 +908,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
               <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 sticky top-4">
                 <div className="mb-4 sm:mb-6">
                   <h3 className="text-base sm:text-lg font-semibold mb-2">
-                    Date 
+                    Date
                   </h3>
                   <div className="flex items-center text-gray-700 text-sm sm:text-base">
                     <svg
@@ -878,6 +925,20 @@ export default function ViewEvent({ params }: ViewEventProps) {
                       />
                     </svg>
                     <p>{formattedDate}</p>
+                  </div>
+                  <div className="mt-4">
+                    <Calendar
+                      value={new Date(data.date)}
+                      className="border rounded-lg w-full"
+                      tileClassName={({ date }) => {
+                        const eventDate = new Date(data.date);
+                        return date.getDate() === eventDate.getDate() &&
+                          date.getMonth() === eventDate.getMonth() &&
+                          date.getFullYear() === eventDate.getFullYear()
+                          ? "bg-blue-500 text-white rounded-full"
+                          : "";
+                      }}
+                    />
                   </div>
                 </div>
 
@@ -902,40 +963,137 @@ export default function ViewEvent({ params }: ViewEventProps) {
                     <p>{data.type}</p>
                   </div>
                 </div>
-                <a
-                  href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full bg-blue-500 hover:bg-blue-600 text-white text-center font-semibold py-2 sm:py-3 px-4 rounded-lg transition duration-200 text-sm sm:text-base"
-                >
-                  Add to Calendar
-                </a>
 
-                <a
-                  href={data.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white text-center font-semibold py-2 sm:py-3 px-4 rounded-lg transition duration-200 text-sm sm:text-base"
-                >
-                  More details
-                </a>
-
-                <button className="mt-3 sm:mt-4 w-full flex items-center justify-center text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded-lg border border-blue-500 hover:border-blue-700 transition duration-200 text-sm sm:text-base">
-                  <svg
-                    className="w-4 h-4 sm:w-5 sm:h-5 mr-2"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
+                <div className="space-y-3">
+                  <a
+                    href={generateICalendarLink()}
+                    download={`${data.title}.ics`}
+                    className="block w-full bg-white hover:bg-gray-50 text-gray-700 text-center font-semibold py-2 sm:py-3 px-4 rounded-lg border border-gray-300 transition duration-200 text-sm sm:text-base flex items-center justify-center gap-2"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
-                    />
-                  </svg>
-                  Share Event
-                </button>
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                      />
+                    </svg>
+                    Download iCal
+                  </a>
+
+                  <a
+                    href={generateGoogleCalendarLink()}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative flex items-center gap-4 w-full max-w-md p-4 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition duration-300 group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="bg-blue-100 text-blue-600 p-2 rounded-full group-hover:bg-blue-200 transition">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-6 w-6"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                          />
+                        </svg>
+                      </div>
+                      <div className="text-left">
+                        <p className="text-sm font-semibold text-gray-900 group-hover:text-blue-700">
+                          Add to Google Calendar
+                        </p>
+                      </div>
+                    </div>
+                  </a>
+                  {data.url && (
+                    <a
+                      href={data.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full bg-blue-500 hover:bg-blue-600 text-white text-center font-semibold py-2 sm:py-3 px-4 rounded-lg transition duration-200 text-sm sm:text-base"
+                    >
+                      More Details
+                    </a>
+                  )}
+
+                  <div className="relative">
+                    <button
+                      onClick={() => setShowShareOptions(!showShareOptions)}
+                      className="w-full flex items-center justify-center text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded-lg border border-blue-500 hover:border-blue-700 transition duration-200 text-sm sm:text-base"
+                    >
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5 mr-2"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"
+                        />
+                      </svg>
+                      Share Event
+                    </button>
+
+                    {showShareOptions && (
+                      <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 py-2">
+                        <div
+                          className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                          onClick={() => {
+                            copyToClipboard(window.location.href);
+                            setShowShareOptions(false);
+                          }}
+                        >
+                          Copy Event Link
+                        </div>
+                        {data.url && (
+                          <div
+                            className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
+                            onClick={() => copyToClipboard(data.url)}
+                          >
+                            Copy Details URL
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {data.url && (
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <h4 className="text-sm font-medium text-gray-700 mb-1">
+                      Event URL
+                    </h4>
+                    <div className="flex items-center">
+                      <input
+                        type="text"
+                        value={data.url}
+                        readOnly
+                        className="flex-1 text-xs p-2 border border-gray-300 rounded-l-lg focus:outline-none"
+                      />
+                      <button
+                        onClick={() => copyToClipboard(data.url)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-r-lg text-xs"
+                      >
+                        Copy
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -1052,7 +1210,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
                   </label>
                   <select
                     name="category"
-                    value={formData.category?formData.category:""}
+                    value={formData.category ? formData.category : ""}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiAjdjEwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:1.5rem]"
