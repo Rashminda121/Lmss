@@ -27,17 +27,29 @@ interface Event {
   image: string;
 }
 
+interface Comment {
+  _id: string;
+  eid: string;
+  uid: string;
+  uimage: string;
+  name: string;
+  text: string;
+  email: string;
+  createdAt: Date;
+}
+
 const categories = [
   "All",
   "Conference",
   "Expo",
   "Hackathon",
+  "Technology",
   "General",
   "Workshop",
   "Other",
 ];
 
-const types = ["All", "Online", "On-site", "Hybrid"];
+const types = ["All", "Online", "In-person", "Hybrid"];
 
 export default function ViewEvent({ params }: ViewEventProps) {
   const { id } = params;
@@ -46,10 +58,25 @@ export default function ViewEvent({ params }: ViewEventProps) {
   const [error, setError] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [isCommentLoading, setIsCommentLoading] = useState(false);
   const { user } = useUser();
   const hasFetchedData = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const commentsEndRef = useRef<HTMLDivElement>(null);
+  const [isCommentModalOpen, setIsCommentModalOpen] = useState<boolean>(false);
+  const [newComment, setNewComment] = useState({
+    eid: id,
+    uid: user?.id,
+    uimage: user?.imageUrl,
+    name: user?.fullName,
+    text: "",
+    email: user?.primaryEmailAddress?.emailAddress,
+  });
+  const [updatedText, setUpdatedText] = useState({
+    _id: "",
+    description: "",
+  });
 
   const [formData, setFormData] = useState({
     _id: id,
@@ -156,6 +183,9 @@ export default function ViewEvent({ params }: ViewEventProps) {
         image: response.data.image,
       }));
       setImagePreview(response.data.image);
+
+      console.log(response.data)
+      //await fetchComments();
     } catch (error: any) {
       Swal.fire({
         toast: true,
@@ -180,12 +210,33 @@ export default function ViewEvent({ params }: ViewEventProps) {
     }
   };
 
+  const getCommentData = async () => {
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/user/viewEventComments",
+        { eid: id }
+      );
+      setComments(response.data);
+    } catch (error: any) {
+      console.log("No comments available");
+    }
+  };
+
   useEffect(() => {
     if (!hasFetchedData.current) {
       getData();
+      getCommentData();
       hasFetchedData.current = true;
     }
   }, [id]);
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [comments]);
+
+  const scrollToBottom = () => {
+    commentsEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   const isAuthor = user?.id === data?.uid;
 
@@ -256,6 +307,209 @@ export default function ViewEvent({ params }: ViewEventProps) {
     }
   };
 
+  const handleInputComment = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setNewComment((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleCommentSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    setIsCommentLoading(true);
+    try {
+      const response = await axios.post(
+        "http://localhost:4000/user/addEventComment",
+        {
+          eid: id,
+          uid: user?.id,
+          text: newComment.text,
+          uimage: user?.imageUrl,
+          name: user?.fullName,
+          email: user?.primaryEmailAddress?.emailAddress,
+        }
+      );
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        title: "Comment added successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+
+      clearComment();
+      setTimeout(() => {
+        setComments([]);
+        getCommentData();
+      }, 500);
+    } catch (error) {
+      console.error("Failed to post comment:", error);
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title: "Failed to post comment. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    } finally {
+      setIsCommentLoading(false);
+    }
+  };
+
+  const handleCommentDelete = async (cid: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You won't be able to revert this!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel",
+        reverseButtons: true,
+      });
+
+      if (result.isConfirmed) {
+        const response = await axios.delete(
+          "http://localhost:4000/user/deleteEventComment",
+          {
+            data: { _id: cid },
+          }
+        );
+
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "success",
+          title: "Comment deleted successfully!",
+          showConfirmButton: false,
+          timer: 3000,
+          timerProgressBar: true,
+          showClass: {
+            popup: "animate__animated animate__bounceInDown",
+          },
+          hideClass: {
+            popup: "animate__animated animate__bounceOutUp",
+          },
+        });
+
+        setTimeout(() => {
+          setComments([]);
+          getCommentData();
+        }, 500);
+      }
+    } catch (error: any) {
+      console.error("Failed to delete discussion:", error);
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title:
+          error.response?.data?.message ||
+          "Failed to delete discussion. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+    }
+  };
+
+  const handleInputupdateCommentChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+
+    if (name === "commentdescription") {
+      setUpdatedText((prev) => ({
+        ...prev,
+        description: value,
+      }));
+    } else {
+      setUpdatedText((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
+    }
+  };
+
+  const handleCommentUpdate = async () => {
+    try {
+      const response = await axios.put(
+        "http://localhost:4000/user/editEventComment",
+        {
+          _id: updatedText._id,
+          text: updatedText.description,
+        }
+      );
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        title: "Comment updated successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+
+      handleCommentCancel();
+      getCommentData();
+    } catch (error: any) {
+      console.error("Failed to update discussion:", error);
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title:
+          error.response?.data?.message ||
+          "Failed to update comment. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+    }
+  };
+
+  const handleCommentCancel = () => {
+    setIsCommentModalOpen(false);
+    setUpdatedText({ _id: "", description: "" });
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -303,9 +557,31 @@ export default function ViewEvent({ params }: ViewEventProps) {
     year: "numeric",
     month: "long",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
+    // hour: "2-digit",
+    // minute: "2-digit",
   });
+
+  const formatCommentDate = (dateString: Date) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      // hour: "2-digit",
+      // minute: "2-digit",
+    });
+  };
+
+  const clearComment = () => {
+    setNewComment({
+      eid: id,
+      uid: user?.id,
+      uimage: user?.imageUrl,
+      name: user?.fullName,
+      text: "",
+      email: user?.primaryEmailAddress?.emailAddress,
+    });
+  };
 
   return (
     <>
@@ -398,7 +674,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+              <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
                 <h2 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4">
                   Location
                 </h2>
@@ -438,6 +714,146 @@ export default function ViewEvent({ params }: ViewEventProps) {
                   </p>
                 </div>
               </div>
+
+              {/* Comments Section */}
+              <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+                <h2 className="text-base md:text-xl sm:text-2xl font-bold mb-4 sm:mb-6">
+                  Comments ({comments.length})
+                </h2>
+
+                {user ? (
+                  <form onSubmit={handleCommentSubmit} className="mb-6">
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={user.imageUrl}
+                        alt={user.fullName || "User"}
+                        className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
+                      />
+                      <div className="flex-1">
+                        <textarea
+                          rows={3}
+                          name="text"
+                          value={newComment.text || ""}
+                          onChange={handleInputComment}
+                          placeholder="Add a comment..."
+                          className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                          disabled={isCommentLoading}
+                        ></textarea>
+                        <div className="flex justify-end mt-2">
+                          <button
+                            type="submit"
+                            disabled={!newComment.text || isCommentLoading}
+                            className="px-4 py-2 text-xs md:text-sm font-medium border border-transparent rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {isCommentLoading ? "Posting..." : "Post Comment"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="mb-6 p-4 bg-gray-50 rounded-lg text-center">
+                    <p className="text-gray-600 mb-3">
+                      Please sign in to leave a comment
+                    </p>
+                    <Link
+                      href="/sign-in"
+                      className="px-4 py-2 text-sm font-medium border border-transparent rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200 inline-block"
+                    >
+                      Sign In
+                    </Link>
+                  </div>
+                )}
+
+                <div className="space-y-4 max-h-[250px] overflow-y-auto pr-2">
+                  {comments.length === 0 ? (
+                    <div className="text-sm text-center py-6 text-gray-500">
+                      No comments yet. Be the first to comment!
+                    </div>
+                  ) : (
+                    comments.map((comment) => (
+                      <div
+                        key={comment._id}
+                        className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
+                      >
+                        <div className="flex items-start gap-3">
+                          <img
+                            src={comment.uimage}
+                            alt={comment.name}
+                            className="w-6 h-6 md:w-8 md:h-8 rounded-full object-cover"
+                          />
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <div>
+                                <h4 className="font-semibold text-xs md:text-sm sm:text-base">
+                                  {comment.name}
+                                </h4>
+                                <p className="text-gray-500 text-xs">
+                                  {formatCommentDate(comment.createdAt)}
+                                </p>
+                              </div>
+                              {(user?.id === comment.uid || isAuthor) && (
+                                <div className="flex space-x-1">
+                                  <button
+                                    onClick={() => {
+                                      setIsCommentModalOpen(true);
+                                      setUpdatedText({
+                                        _id: comment._id,
+                                        description: comment.text,
+                                      });
+                                    }}
+                                    className="p-1.5 text-gray-500 hover:text-white hover:bg-blue-500 transition-colors rounded-full"
+                                    title="Edit comment"
+                                  >
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                                      />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleCommentDelete(comment._id)
+                                    }
+                                    className="p-1.5 text-gray-500 hover:text-white hover:bg-red-500 transition-colors rounded-full"
+                                    title="Delete comment"
+                                  >
+                                    <svg
+                                      className="w-4 h-4"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      viewBox="0 0 24 24"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                                      />
+                                    </svg>
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                            <p className="mt-1 text-gray-700 text-xs md:text-sm">
+                              {comment.text}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                  <div ref={commentsEndRef} />
+                </div>
+              </div>
             </div>
 
             {/* Right Column */}
@@ -445,7 +861,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
               <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 sticky top-4">
                 <div className="mb-4 sm:mb-6">
                   <h3 className="text-base sm:text-lg font-semibold mb-2">
-                    Date & Time
+                    Date 
                   </h3>
                   <div className="flex items-center text-gray-700 text-sm sm:text-base">
                     <svg
@@ -501,7 +917,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
                   rel="noopener noreferrer"
                   className="block mt-3 w-full bg-blue-500 hover:bg-blue-600 text-white text-center font-semibold py-2 sm:py-3 px-4 rounded-lg transition duration-200 text-sm sm:text-base"
                 >
-                  Get Tickets
+                  More details
                 </a>
 
                 <button className="mt-3 sm:mt-4 w-full flex items-center justify-center text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded-lg border border-blue-500 hover:border-blue-700 transition duration-200 text-sm sm:text-base">
@@ -636,7 +1052,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
                   </label>
                   <select
                     name="category"
-                    value={formData.category}
+                    value={formData.category?formData.category:""}
                     onChange={handleInputChange}
                     required
                     className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiAjdjEwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:1.5rem]"
@@ -751,6 +1167,60 @@ export default function ViewEvent({ params }: ViewEventProps) {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isCommentModalOpen && (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md shadow-xl transition-all duration-200 ease-out">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                Edit Comment
+              </h3>
+              <button
+                onClick={handleCommentCancel}
+                className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 transition-colors"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+            </div>
+
+            <textarea
+              name="commentdescription"
+              value={updatedText.description || ""}
+              onChange={handleInputupdateCommentChange}
+              rows={3}
+              className="w-full px-4 py-3 text-gray-700 dark:text-gray-200 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
+              placeholder="Share your thoughts..."
+            />
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button
+                onClick={handleCommentCancel}
+                className="px-5 py-2.5 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors duration-200 font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCommentUpdate}
+                className="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50"
+                disabled={!updatedText.description.trim()}
+              >
+                Update
+              </button>
             </div>
           </div>
         </div>

@@ -67,6 +67,8 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
   });
 
   const router = useRouter();
+  const newestCommentRef = useRef<HTMLDivElement>(null);
+  const commentsContainerRef = useRef<HTMLDivElement>(null);
 
   const getData = async () => {
     try {
@@ -111,7 +113,7 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
   const getCommentData = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/user/viewComments",
+        "http://localhost:4000/user/viewDisComments",
         { disid: id }
       );
       setCommentData(response.data);
@@ -127,6 +129,14 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
       hasFetchedData.current = true;
     }
   }, [user]);
+
+  useEffect(() => {
+    // Scroll to bottom of comments when new comments are loaded
+    if (commentsContainerRef.current && commentData.length > 0) {
+      commentsContainerRef.current.scrollTop =
+        commentsContainerRef.current.scrollHeight;
+    }
+  }, [commentData]);
 
   if (loading) {
     return (
@@ -320,7 +330,7 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/user/addComment",
+        "http://localhost:4000/user/addDisComment",
         {
           disid: id,
           uid: user?.id,
@@ -347,7 +357,19 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
         },
       });
 
-      getCommentData();
+      // Clear and refetch comments
+      await getCommentData();
+
+      // Scroll to the newest comment after a small delay to ensure DOM is updated
+      setTimeout(() => {
+        if (newestCommentRef.current) {
+          newestCommentRef.current.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest",
+          });
+        }
+      }, 100);
+
       clearCommentForm();
     } catch (error: any) {
       console.error("Failed to update discussion:", error);
@@ -402,8 +424,8 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
   const handleCommentUpdate = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/editComment",
+      const response = await axios.put(
+        "http://localhost:4000/user/editDisComment",
         {
           _id: updatedText._id,
           description: updatedText.description,
@@ -426,7 +448,7 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
         },
       });
 
-      getCommentData();
+      await getCommentData();
       handleCommentCancel();
     } catch (error: any) {
       console.error("Failed to update discussion:", error);
@@ -483,7 +505,7 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
       if (result.isConfirmed) {
         const response = await axios.delete(
-          "http://localhost:4000/user/deleteComment",
+          "http://localhost:4000/user/deleteDisComment",
           {
             data: { _id: cid },
           }
@@ -710,14 +732,16 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
         </div>
 
         <div
+          ref={commentsContainerRef}
           className={`divide-y divide-gray-100 dark:divide-gray-700/60 ${
             commentData?.length > 3 ? "max-h-[300px] overflow-y-auto" : ""
           }`}
         >
           {commentData && commentData.length > 0 ? (
-            commentData.map((cdata: CommentInterface) => (
+            commentData.map((cdata: CommentInterface, index) => (
               <div
                 key={cdata._id}
+                ref={index === commentData.length - 1 ? newestCommentRef : null}
                 className="p-4 hover:bg-gray-50/50 dark:hover:bg-gray-700/30 transition-colors duration-150 group"
               >
                 <div className="flex items-start gap-3">

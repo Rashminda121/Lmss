@@ -11,6 +11,7 @@ const categories = [
   "Conference",
   "Expo",
   "Hackathon",
+  "Technology",
   "General",
   "Workshop",
   "Other",
@@ -32,7 +33,7 @@ const months = [
   "December",
 ];
 
-const types = ["All", "Online", "On-site", "Hybrid"];
+const types = ["All", "Online", "In-person", "Hybrid"];
 
 const getMonthFromDate = (dateInput: Date | string): string => {
   const date = typeof dateInput === "string" ? new Date(dateInput) : dateInput;
@@ -63,6 +64,7 @@ interface Event {
   uid: string;
   title: string;
   date: Date;
+  time:Date;
   location: string;
   coordinates: object;
   description: string;
@@ -92,6 +94,7 @@ const Events = () => {
     uid: user?.id || "",
     title: "",
     date: "",
+    time: "",
     location: "",
     coordinates: {},
     description: "",
@@ -121,6 +124,7 @@ const Events = () => {
         uid: user?.id || "",
         title: "",
         date: "",
+        time: "",
         location: "",
         coordinates: {},
         description: "",
@@ -300,6 +304,7 @@ const Events = () => {
       uid: user?.id || "",
       title: "",
       date: "",
+      time: "",
       location: "",
       coordinates: {},
       description: "",
@@ -580,12 +585,14 @@ const Events = () => {
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium whitespace-nowrap ${
                             event.type === "Online"
                               ? "bg-purple-100 text-purple-800"
-                              : event.type === "On-site"
+                              : event.type === "In-person"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-green-100 text-green-800"
                           }`}
                         >
-                          {event.type === "On-site" ? "On-Site" : event.type}
+                          {event.type === "In-person"
+                            ? "In-person"
+                            : event.type}
                         </span>
                       </div>
                       <p className="text-sm text-gray-500 mb-3">

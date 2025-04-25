@@ -2,6 +2,7 @@ const User = require("../models/userModel");
 const Discussion = require("../models/discussionModel");
 const Event = require("../models/eventModel");
 const DisComment = require("../models/discussionCommentsModel");
+const EventComment = require("../models/eventCommentsModel");
 
 const userProfile = async (req, res) => {
   try {
@@ -376,7 +377,7 @@ const deleteEvent = async (req, res) => {
   }
 };
 
-const addComment = async (req, res) => {
+const addDisComment = async (req, res) => {
   try {
     const { disid, uid, uimage, name, description, email } = req.body;
 
@@ -403,7 +404,7 @@ const addComment = async (req, res) => {
   }
 };
 
-const viewComments = async (req, res) => {
+const viewDisComments = async (req, res) => {
   try {
     const { disid } = req.body;
 
@@ -425,7 +426,7 @@ const viewComments = async (req, res) => {
   }
 };
 
-const editComment = async (req, res) => {
+const editDisComment = async (req, res) => {
   try {
     const { _id, description } = req.body;
 
@@ -463,7 +464,7 @@ const editComment = async (req, res) => {
   }
 };
 
-const deleteComment = async (req, res) => {
+const deleteDisComment = async (req, res) => {
   try {
     const { _id } = req.body;
 
@@ -485,6 +486,118 @@ const deleteComment = async (req, res) => {
   }
 };
 
+const addEventComment = async (req, res) => {
+  try {
+    const { eid, uid, uimage, name, text, email } = req.body;
+
+    if (!eid || !text) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Create a new comment
+    const newComment = new EventComment({
+      eid,
+      uid,
+      uimage,
+      name,
+      text,
+      email,
+    });
+    await newComment.save();
+
+    res.status(201).json({ message: "Comment added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding comment", error: error.message });
+  }
+};
+
+const editEventComment = async (req, res) => {
+  try {
+    const { _id, text } = req.body;
+
+    // Validate required fields
+    if (!_id || !text) {
+      return res.status(400).json({
+        message: "Missing required fields.",
+      });
+    }
+
+    // Prepare update object
+    const updateData = {
+      text,
+    };
+
+    const updateComment = await EventComment.findByIdAndUpdate(
+      _id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updateComment) {
+      return res.status(404).json({ message: "Comment not found" });
+    }
+
+    res.status(200).json({
+      message: "Comment updated successfully",
+      Comment: updateComment,
+    });
+  } catch (error) {
+    console.error("Error updating comment:", error);
+    res.status(500).json({
+      message: "Error updating comment",
+      error: error.message,
+    });
+  }
+};
+const deleteEventComment = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedComment = await EventComment.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+      comment: deletedComment,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting comment",
+      error: error.message,
+    });
+  }
+};
+
+const viewEventComments = async (req, res) => {
+  try {
+    const { eid } = req.body;
+
+    if (!eid) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const comments = await EventComment.find({ eid });
+
+    if (!comments || comments.length === 0) {
+      return res.status(404).json({ message: "No comments found." });
+    }
+
+    res.status(200).json(comments);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting comments", error: error.message });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -500,8 +613,12 @@ module.exports = {
   viewEvent,
   updateEvent,
   deleteEvent,
-  addComment,
-  viewComments,
-  editComment,
-  deleteComment,
+  addDisComment,
+  viewDisComments,
+  editDisComment,
+  deleteDisComment,
+  addEventComment,
+  editEventComment,
+  deleteEventComment,
+  viewEventComments,
 };

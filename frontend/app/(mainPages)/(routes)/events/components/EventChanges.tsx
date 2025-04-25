@@ -5,6 +5,7 @@ interface EventChangesProps {
   formData: {
     title: string;
     date: any;
+    time:string,
     location: string;
     coordinates: object;
     description: string;
@@ -155,7 +156,7 @@ const EventChanges = ({
                 onChange={handleInputChange}
                 required
                 className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                placeholder="Enter location link"
+                placeholder="Enter location or link"
               />
             </div>
 
