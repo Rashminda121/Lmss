@@ -15,7 +15,7 @@ const eventSchema = new mongoose.Schema(
       default: "date",
     },
     time: {
-      type: Date,
+      type: String,
       default: "time",
     },
     location: {

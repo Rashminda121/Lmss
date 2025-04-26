@@ -85,6 +85,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
     _id: id,
     title: "",
     date: "",
+    time: "",
     location: "",
     coordinates: {},
     description: "",
@@ -177,6 +178,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
         ...prev,
         title: response.data.title,
         date: response.data.date,
+        time: response.data.time,
         location: response.data.location,
         coordinates: response.data.coordinates,
         description: response.data.description,
@@ -608,6 +610,15 @@ END:VCALENDAR`;
     // minute: "2-digit",
   });
 
+  const formatTo12Hour = (time24: any) => {
+    if (!time24) return "";
+    const [hourStr, minute] = time24.split(":");
+    let hour = parseInt(hourStr, 10);
+    const ampm = hour >= 12 ? "PM" : "AM";
+    hour = hour % 12 || 12; // convert 0 to 12
+    return `${hour.toString().padStart(2, "0")}:${minute} ${ampm}`;
+  };
+
   const formatCommentDate = (dateString: Date) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -656,7 +667,8 @@ END:VCALENDAR`;
                   {data.title}
                 </h1>
                 <p className="text-sm sm:text-base md:text-xl">
-                  {formattedDate}
+                  {formattedDate}{" "}
+                  {data.time && `at ${formatTo12Hour(data.time)}`}
                 </p>
               </div>
               {isAuthor && (
@@ -908,9 +920,9 @@ END:VCALENDAR`;
               <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 sticky top-4">
                 <div className="mb-4 sm:mb-6">
                   <h3 className="text-base sm:text-lg font-semibold mb-2">
-                    Date
+                    {`Date${data.time ? " & Time" : ""}`}
                   </h3>
-                  <div className="flex items-center text-gray-700 text-sm sm:text-base">
+                  <div className="flex items-center p-2 text-gray-700 text-sm md:text-base border border-gray-400 rounded">
                     <svg
                       className="w-4 h-4 sm:w-5 sm:h-5 mr-2"
                       fill="none"
@@ -924,12 +936,15 @@ END:VCALENDAR`;
                         d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                       />
                     </svg>
-                    <p>{formattedDate}</p>
+                    <p>
+                      {formattedDate}{" "}
+                      {data.time && `at ${formatTo12Hour(data.time)}`}
+                    </p>
                   </div>
                   <div className="mt-4">
                     <Calendar
                       value={new Date(data.date)}
-                      className="border rounded-lg w-full"
+                      className="border p-2 rounded-lg w-full"
                       tileClassName={({ date }) => {
                         const eventDate = new Date(data.date);
                         return date.getDate() === eventDate.getDate() &&
@@ -942,13 +957,13 @@ END:VCALENDAR`;
                   </div>
                 </div>
 
-                <div className="mb-4 sm:mb-6">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2">
+                <div className="mb-5 sm:mb-7">
+                  <h3 className="text-sm font-medium text-gray-800 tracking-wider  mb-2">
                     Event Type
                   </h3>
-                  <div className="flex items-center text-gray-700 text-sm sm:text-base">
+                  <div className="flex items-center px-3 py-2 bg-gray-50 rounded-lg border border-gray-200 hover:border-blue-300 transition-colors duration-200">
                     <svg
-                      className="w-4 h-4 sm:w-5 sm:h-5 mr-2"
+                      className="w-5 h-5 text-blue-500 mr-3"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -956,13 +971,15 @@ END:VCALENDAR`;
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
-                        strokeWidth={2}
+                        strokeWidth={1.5}
                         d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
                       />
                     </svg>
-                    <p>{data.type}</p>
+                    <p className="text-gray-800 font-medium">{data.type}</p>
                   </div>
                 </div>
+
+                <hr className="my-4 border-gray-200" />
 
                 <div className="space-y-3">
                   <a
@@ -991,7 +1008,7 @@ END:VCALENDAR`;
                     href={generateGoogleCalendarLink()}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="relative flex items-center gap-4 w-full max-w-md p-4 rounded-2xl border border-gray-200 bg-white shadow-sm hover:shadow-md transition duration-300 group"
+                    className="relative flex items-center gap-4 w-full max-w-md p-4 rounded-2xl border border-gray-300 bg-white shadow-sm hover:shadow-md transition duration-300 group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="bg-blue-100 text-blue-600 p-2 rounded-full group-hover:bg-blue-200 transition">
@@ -1168,6 +1185,36 @@ END:VCALENDAR`;
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Time
+                    </label>
+                    <input
+                      name="time"
+                      type="time"
+                      value={formData.time || ""}
+                      onChange={handleInputChange}
+                      className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiAjdjEwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:1.5rem]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Location <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="location"
+                    value={formData.location}
+                    onChange={handleInputChange}
+                    required
+                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                    placeholder="Enter location link"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
                       Type <span className="text-red-500">*</span>
                     </label>
                     <select
@@ -1187,43 +1234,27 @@ END:VCALENDAR`;
                         ))}
                     </select>
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Location <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="location"
-                    value={formData.location}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
-                    placeholder="Enter location link"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Category <span className="text-red-500">*</span>
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category ? formData.category : ""}
-                    onChange={handleInputChange}
-                    required
-                    className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiAjdjEwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:1.5rem]"
-                  >
-                    <option value="">Select category</option>
-                    {categories
-                      .filter((c) => c !== "All")
-                      .map((cat) => (
-                        <option key={cat} value={cat}>
-                          {cat}
-                        </option>
-                      ))}
-                  </select>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Category <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      name="category"
+                      value={formData.category ? formData.category : ""}
+                      onChange={handleInputChange}
+                      required
+                      className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all appearance-none bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiAjdjEwMCIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPjxwb2x5bGluZSBwb2ludHM9IjYgOSAxMiAxNSAxOCA5Ij48L3BvbHlsaW5lPjwvc3ZnPg==')] bg-no-repeat bg-[right_0.75rem_center] bg-[length:1.5rem]"
+                    >
+                      <option value="">Select category</option>
+                      {categories
+                        .filter((c) => c !== "All")
+                        .map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
+                        ))}
+                    </select>
+                  </div>
                 </div>
 
                 <div>

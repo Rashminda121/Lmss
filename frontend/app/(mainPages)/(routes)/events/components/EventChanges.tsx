@@ -5,7 +5,7 @@ interface EventChangesProps {
   formData: {
     title: string;
     date: any;
-    time:string,
+    time: string;
     location: string;
     coordinates: object;
     description: string;
@@ -83,7 +83,7 @@ const EventChanges = ({
               />
             </div>
 
-            <div className="">
+            <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Date <span className="text-red-500">*</span>
@@ -95,6 +95,18 @@ const EventChanges = ({
                   onChange={handleInputChange}
                   min={new Date().toISOString().split("T")[0]}
                   required
+                  className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  name="time"
+                  value={formData.time || ""}
+                  onChange={handleInputChange}
                   className="w-full px-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
