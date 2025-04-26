@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* app/globals.css */
+/* @import "react-quill/dist/quill.snow.css"; */
+
 html,
 body,
 :root {

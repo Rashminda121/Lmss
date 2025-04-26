@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-
 import {
   Form,
   FormControl,
@@ -12,14 +11,13 @@ import {
   FormItem,
   FormMessage,
 } from "@/components/ui/form";
-
 import { Editor } from "@/components/editor";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Chapter } from "@prisma/client";
 import { Pencil } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Preview } from "@/components/preview";
 
@@ -39,17 +37,24 @@ export const ChapterDescriptionForm = ({
   chapterId,
 }: ChapterDescriptionFormProps) => {
   const [isEditing, setIsEditing] = useState(false);
-
-  const toggleEdit = () => setIsEditing((current) => !current);
-
-  const router = useRouter();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues: { description: initialData?.description || "" },
+    defaultValues: {
+      description: initialData?.description || ""
+    },
   });
 
   const { isSubmitting, isValid } = form.formState;
+  const router = useRouter();
+
+  // Reset form when initialData changes
+  useEffect(() => {
+    form.reset({
+      description: initialData?.description || ""
+    });
+  }, [initialData, form]);
+
+  const toggleEdit = () => setIsEditing((current) => !current);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -57,7 +62,7 @@ export const ChapterDescriptionForm = ({
         `/api/courses/${courseId}/chapters/${chapterId}`,
         values
       );
-      toast.success("Chapter Updated");
+      toast.success("Chapter updated");
       toggleEdit();
       router.refresh();
     } catch {

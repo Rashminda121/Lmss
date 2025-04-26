@@ -290,6 +290,7 @@ const updateEvent = async (req, res) => {
       _id,
       title,
       date,
+      time,
       location,
       coordinates,
       description,
@@ -323,6 +324,7 @@ const updateEvent = async (req, res) => {
     const updateData = {
       title,
       date: new Date(date),
+      time,
       location,
       coordinates: coordinates || {},
       description,

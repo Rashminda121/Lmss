@@ -79,7 +79,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
     _id: "",
     description: "",
   });
-  const [showShareOptions, setShowShareOptions] = useState(false);
+  // const [showShareOptions, setShowShareOptions] = useState(false);
 
   const [formData, setFormData] = useState({
     _id: id,
@@ -1047,7 +1047,10 @@ END:VCALENDAR`;
 
                   <div className="relative">
                     <button
-                      onClick={() => setShowShareOptions(!showShareOptions)}
+                      onClick={() => {
+                        // setShowShareOptions(!showShareOptions);
+                        copyToClipboard(window.location.href);
+                      }}
                       className="w-full flex items-center justify-center text-blue-500 hover:text-blue-700 font-semibold py-2 px-4 rounded-lg border border-blue-500 hover:border-blue-700 transition duration-200 text-sm sm:text-base"
                     >
                       <svg
@@ -1066,7 +1069,7 @@ END:VCALENDAR`;
                       Share Event
                     </button>
 
-                    {showShareOptions && (
+                    {/* {showShareOptions && (
                       <div className="absolute z-10 mt-2 w-full bg-white rounded-lg shadow-lg border border-gray-200 py-2">
                         <div
                           className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
@@ -1077,16 +1080,8 @@ END:VCALENDAR`;
                         >
                           Copy Event Link
                         </div>
-                        {data.url && (
-                          <div
-                            className="px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer"
-                            onClick={() => copyToClipboard(data.url)}
-                          >
-                            Copy Details URL
-                          </div>
-                        )}
                       </div>
-                    )}
+                    )} */}
                   </div>
                 </div>
 
