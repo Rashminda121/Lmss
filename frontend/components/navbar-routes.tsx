@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import Link from "next/link";
 import { SearchInput } from "./search-input";
-import { isLecturer } from "@/lib/teacher";
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
@@ -22,6 +21,10 @@ export const NavbarRoutes = () => {
   const isCoursePage = pathname.includes("/courses");
   const isSearchPage = pathname === "/search";
 
+  const isTeacherChecker = (userRole?: string | null) => {
+    return userRole === "lecturer" || userRole === "admin";
+  };
+
   const fetchAndCheckUser = async () => {
     if (!userId || !user || !user.isLoaded) return;
 
@@ -36,7 +39,7 @@ export const NavbarRoutes = () => {
         `${backendUrl}/user/userProfile?uid=${userId}&email=${userEmail}`
       );
 
-      setCheckLecturer(isLecturer(response.data.role));
+      setCheckLecturer(isTeacherChecker(response.data.role));
     } catch (error) {
       console.error("Error fetching user:", error);
     }
