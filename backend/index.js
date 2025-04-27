@@ -20,7 +20,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
 const lecturerRoutes = require("./routes/lecturerRoutes");
 
-app.use("/admin", adminRoutes);
+app.use("/api/admin", adminRoutes);
 app.use("/user", userRoutes);
 app.use("/lecturer", lecturerRoutes);
 

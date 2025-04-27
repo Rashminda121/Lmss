@@ -1,11 +1,19 @@
 const express = require("express");
 const router = express.Router();
-const adminController = require("../controllers/adminController");
+const {
+  adminProfile,
+  createUser,
+  updateUser,
+  deleteUser,
+  dashboard,
+} = require("../controllers/adminController");
 
-router.get("/", adminController.adminProfile);
+router.get("/", adminProfile);
 
-router.post("/create-user", adminController.createUser);
-router.put("/update-user", adminController.updateUser);
-router.delete("/delete-user", adminController.deleteUser);
+router.post("/create-user", createUser);
+router.put("/update-user", updateUser);
+router.delete("/delete-user", deleteUser);
+
+router.get("/dashboard", dashboard);
 
 module.exports = router;

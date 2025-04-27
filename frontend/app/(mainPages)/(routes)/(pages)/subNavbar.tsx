@@ -1,9 +1,20 @@
 "use client";
 
-import { useClerk } from "@clerk/nextjs";
+import { useClerk, useUser } from "@clerk/nextjs";
 import { User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import React, { useEffect, useRef, useState } from "react";
+
+interface UserProfileData {
+  name?: string;
+  email?: string;
+  phone?: string | null;
+  image?: string;
+  role?: string;
+  address?: string;
+  updatedAt?: string;
+}
 
 const SubNavbar: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,13 +22,84 @@ const SubNavbar: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  const [userProfile, setUserProfile] = useState<UserProfileData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const { user, isLoaded } = useUser();
+
+  useEffect(() => {
+    if (isLoaded && user) {
+      getUser();
+    }
+  }, [isLoaded, user]);
+
+  const getUser = async () => {
+    if (!user) return;
+
+    setLoading(true);
+
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
+    if (!backendUrl) {
+      console.error("Backend URL is not defined.");
+      return;
+    }
+
+    const uid = encodeURIComponent(user.id ?? "");
+    const email = encodeURIComponent(
+      user.primaryEmailAddress?.emailAddress ?? ""
+    );
+
+    try {
+      const response = await fetch(
+        `${backendUrl}/user/userProfile?uid=${uid}&email=${email}`,
+        {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      if (data && typeof data === "object") {
+        setUserProfile(data);
+      } else {
+        console.error("Invalid user profile data:", data);
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const { signOut } = useClerk();
 
   const router = useRouter();
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const pathName = usePathname();
+
+  const settingActiveItem = () => {
+    if (pathName === "/admin") {
+      setActiveItem("admin");
+    } else if (pathName === "/mainPage") {
+      setActiveItem("Home");
+    } else if (pathName === "/about") {
+      setActiveItem("About");
+    } else if (pathName === "/discussions") {
+      setActiveItem("Discussions");
+    } else if (pathName === "/events") {
+      setActiveItem("Events");
+    } else if (pathName === "/communityArticles") {
+      setActiveItem("Articles");
+    }
+  };
+
   useEffect(() => {
+    settingActiveItem();
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -69,19 +151,34 @@ const SubNavbar: React.FC = () => {
         {/* Centered Menu Items */}
         <div className="hidden sm:flex sm:space-x-4 flex-1 justify-center">
           {menuItems.map((item) => (
-            <a
-              key={item.name}
-              href={item.path}
-              className={`p-2 transition-colors duration-300 font-semibold ${
-                activeItem === item.name
-                  ? "text-blue-700"
-                  : "text-black hover:text-blue-700"
-              }`}
-              onClick={() => handleItemClick(item)}
-            >
-              {item.name}
-            </a>
+            <Link key={item.name} href={item.path} passHref>
+              <button
+                className={`p-2 transition-colors duration-300 font-semibold ${
+                  activeItem === item.name
+                    ? "text-blue-700"
+                    : "text-black hover:text-blue-700"
+                }`}
+                onClick={() => handleItemClick(item)}
+              >
+                {item.name}
+              </button>
+            </Link>
           ))}
+
+          {userProfile && userProfile.role === "admin" && (
+            <Link key="admin-dashboard" href="/admin/dashboard" passHref>
+              <button
+                className={`p-2 transition-colors duration-300 font-semibold ${
+                  activeItem === "admin"
+                    ? "text-blue-700"
+                    : "text-black hover:text-blue-700"
+                }`}
+                onClick={() => handleItemClick({ name: "admin" })}
+              >
+                Admin
+              </button>
+            </Link>
+          )}
         </div>
 
         {/* Sign in Button in the right corner */}

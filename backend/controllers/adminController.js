@@ -1,3 +1,10 @@
+const User = require("../models/userModel");
+const Discussion = require("../models/discussionModel");
+const Event = require("../models/eventModel");
+const DisComment = require("../models/discussionCommentsModel");
+const EventComment = require("../models/eventCommentsModel");
+const { connectMysqlDB } = require("../db/db");
+
 const adminProfile = (req, res) => {
   res.send("Admin profile details");
 };
@@ -14,9 +21,48 @@ const deleteUser = (req, res) => {
   res.send("Admin deletes the user");
 };
 
+const dashboard = async (req, res) => {
+  try {
+    const discussionCount = await Discussion.countDocuments({});
+    const userCount = await User.countDocuments({});
+    const eventCount = await Event.countDocuments({});
+    const disCommentCount = await DisComment.countDocuments({});
+    const eventCommentCount = await EventComment.countDocuments({});
+    //const articleCount = await Articles.countDocuments({});
+
+    const mysqlConnection = await connectMysqlDB();
+    const [courses] = await mysqlConnection.execute(
+      "SELECT COUNT(*) AS courseCount FROM course"
+    );
+    const courseCount = courses[0].courseCount;
+
+    await mysqlConnection.end();
+
+    const commentCount = disCommentCount + eventCommentCount;
+
+    const countData = {
+      discussionCount,
+      userCount,
+      courseCount,
+      eventCount,
+      commentCount,
+      disCommentCount,
+      eventCommentCount,
+    };
+
+    res.status(200).json(countData);
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    res
+      .status(500)
+      .json({ message: "Error getting dashboard data", error: error.message });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
   updateUser,
   deleteUser,
+  dashboard,
 };
