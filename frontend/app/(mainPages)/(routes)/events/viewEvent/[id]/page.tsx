@@ -45,6 +45,7 @@ const categories = [
   "Conference",
   "Expo",
   "Hackathon",
+  "Education",
   "Technology",
   "General",
   "Workshop",

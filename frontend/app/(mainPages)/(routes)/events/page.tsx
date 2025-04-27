@@ -11,6 +11,7 @@ const categories = [
   "Conference",
   "Expo",
   "Hackathon",
+  "Education",
   "Technology",
   "General",
   "Workshop",
@@ -64,7 +65,7 @@ interface Event {
   uid: string;
   title: string;
   date: Date;
-  time:Date;
+  time: Date;
   location: string;
   coordinates: object;
   description: string;
@@ -145,8 +146,8 @@ const Events = () => {
     const matchesType = selectedType === "All" || event.type === selectedType;
     const matchesDate =
       !selectedDate ||
-      new Date(event.date).toISOString().split("T")[0] ===
-        new Date(selectedDate).toISOString().split("T")[0];
+      new Date(event.date).toDateString() ===
+        new Date(selectedDate).toDateString();
 
     const matchesSearch =
       event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
