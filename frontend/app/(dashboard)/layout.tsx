@@ -1,7 +1,60 @@
+"use client";
+import { useUser } from "@clerk/nextjs";
 import { Navbar } from "./_components/navbar";
 import { Sidebar } from "./_components/sidebar";
+import { useEffect } from "react";
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoaded } = useUser();
+
+  useEffect(() => {
+    if (isLoaded && !user) {
+      window.location.href = "/";
+    }
+
+    if (isLoaded && user) {
+      handleAddUser();
+    }
+  }, [isLoaded, user]);
+
+  if (!isLoaded) {
+    return (
+      <div className="w-full text-center py-12">
+        <div className="w-16 h-16 border-8 border-t-8 border-blue-500 rounded-full border-r-transparent border-b-transparent animate-spin mx-auto"></div>
+        <p className="mt-4 text-blue-500 text-lg font-semibold">Loading...</p>
+      </div>
+    );
+  }
+
+  const handleAddUser = async () => {
+    if (!user) return;
+
+    const userData = {
+      uid: user?.id,
+      name: user?.fullName,
+      email: user?.primaryEmailAddress?.emailAddress,
+      image: user?.imageUrl,
+    };
+
+    try {
+      const response = await fetch("http://localhost:4000/user/addUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+      const token = data.token;
+
+      localStorage.removeItem("token");
+      localStorage.setItem("token", token);
+    } catch (error) {
+      console.error("Error creating user:", error);
+    }
+  };
+
   return (
     <div className="h-full">
       <div className="h-[80px] md:pl-56 fixed insent-y-0 w-full z-50">

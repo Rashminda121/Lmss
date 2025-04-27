@@ -54,12 +54,14 @@ const MainPage = () => {
       });
 
       const data = await response.json();
+      const token = data.token;
+
+      localStorage.removeItem("token");
+      localStorage.setItem("token", token);
     } catch (error) {
       console.error("Error creating user:", error);
     }
   };
-
-  // console.log(user);
 
   const dashboardItems = [
     { icon: GraduationCap, name: "Courses", href: "./" },

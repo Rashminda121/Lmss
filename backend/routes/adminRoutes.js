@@ -6,6 +6,7 @@ const {
   updateUser,
   deleteUser,
   dashboard,
+  listUsers,
 } = require("../controllers/adminController");
 
 router.get("/", adminProfile);
@@ -15,5 +16,6 @@ router.put("/update-user", updateUser);
 router.delete("/delete-user", deleteUser);
 
 router.get("/dashboard", dashboard);
+router.get("/listUsers", listUsers);
 
 module.exports = router;

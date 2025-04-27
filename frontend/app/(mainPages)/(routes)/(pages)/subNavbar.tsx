@@ -148,7 +148,6 @@ const SubNavbar: React.FC = () => {
           </a>
         </div>
 
-        {/* Centered Menu Items */}
         <div className="hidden sm:flex sm:space-x-4 flex-1 justify-center">
           {menuItems.map((item) => (
             <Link key={item.name} href={item.path} passHref>

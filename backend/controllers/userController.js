@@ -3,6 +3,7 @@ const Discussion = require("../models/discussionModel");
 const Event = require("../models/eventModel");
 const DisComment = require("../models/discussionCommentsModel");
 const EventComment = require("../models/eventCommentsModel");
+const jwt = require("jsonwebtoken");
 
 const userProfile = async (req, res) => {
   try {
@@ -34,18 +35,19 @@ const addUser = async (req, res) => {
     if (!name || !email || !uid) {
       return res.status(400).json({ message: "All fields are required" });
     }
+    const token = jwt.sign({ id: uid }, process.env.JWT_SECRET);
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+      return res.status(400).json({ message: "User already exists", token });
     }
 
     // Create a new user
     const newUser = new User({ uid, name, email, image });
     await newUser.save();
 
-    res.status(201).json({ message: "User added successfully" });
+    res.status(201).json({ message: "User added successfully", token });
   } catch (error) {
     res
       .status(500)

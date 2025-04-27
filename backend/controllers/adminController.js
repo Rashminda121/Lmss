@@ -4,6 +4,7 @@ const Event = require("../models/eventModel");
 const DisComment = require("../models/discussionCommentsModel");
 const EventComment = require("../models/eventCommentsModel");
 const { connectMysqlDB } = require("../db/db");
+const jwt = require("jsonwebtoken");
 
 const adminProfile = (req, res) => {
   res.send("Admin profile details");
@@ -59,10 +60,27 @@ const dashboard = async (req, res) => {
   }
 };
 
+const listUsers = async (req, res) => {
+  try {
+    const users = await User.find({});
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No users found." });
+    }
+
+    res.status(200).json(users);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting users", error: error.message });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
   updateUser,
   deleteUser,
   dashboard,
+  listUsers,
 };
