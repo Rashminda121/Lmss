@@ -3,6 +3,7 @@ const Discussion = require("../models/discussionModel");
 const Event = require("../models/eventModel");
 const DisComment = require("../models/discussionCommentsModel");
 const EventComment = require("../models/eventCommentsModel");
+const Article = require("../models/articleModel");
 const { connectMysqlDB } = require("../db/db");
 const jwt = require("jsonwebtoken");
 
@@ -76,6 +77,118 @@ const listUsers = async (req, res) => {
   }
 };
 
+const addArticle = async (req, res) => {
+  try {
+    const { uid, author, title, description, image, url, category } = req.body;
+
+    if (!author || !title || !description || !image || !category) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const newArticle = new Article({
+      uid,
+      author,
+      title,
+      description,
+      image,
+      url: url ? url : "",
+      category,
+    });
+    await newArticle.save();
+
+    res.status(201).json({ message: "Article added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error creating article", error: error.message });
+  }
+};
+
+const updateArticle = async (req, res) => {
+  try {
+    const { _id, uid, author, title, description, image, url, category } =
+      req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "Article ID is required" });
+    }
+    if (!title || !description || !category) {
+      return res
+        .status(400)
+        .json({ message: "Title, description, and category are required" });
+    }
+
+    const existingArticle = await Article.findById(_id);
+    if (!existingArticle) {
+      return res.status(404).json({ message: "Article not found" });
+    }
+
+    const updateData = {
+      title,
+      description,
+      category,
+      ...(author && { author }),
+      ...(image && { image }),
+      ...(url && { url }),
+      ...(uid && uid !== existingArticle.uid && { uid }),
+      updatedAt: new Date(),
+    };
+
+    const updatedArticle = await Article.findByIdAndUpdate(_id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      message: "Article updated successfully",
+      article: updatedArticle,
+    });
+  } catch (error) {
+    console.error("Error updating article:", error);
+    res.status(500).json({
+      message: "Error updating article",
+      error: error.message,
+    });
+  }
+};
+
+const deleteArticle = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedArticle = await Article.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Article deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting Article",
+      error: error.message,
+    });
+  }
+};
+
+const listArticles = async (req, res) => {
+  try {
+    const articles = await Article.find({});
+
+    if (!articles || articles.length === 0) {
+      return res.status(404).json({ message: "No articles found." });
+    }
+
+    res.status(200).json(articles);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting articles", error: error.message });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
@@ -83,4 +196,8 @@ module.exports = {
   deleteUser,
   dashboard,
   listUsers,
+  addArticle,
+  listArticles,
+  updateArticle,
+  deleteArticle,
 };

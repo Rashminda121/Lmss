@@ -1,16 +1,12 @@
 const mongoose = require("mongoose");
 
-const discussionSchema = new mongoose.Schema(
+const articleSchema = new mongoose.Schema(
   {
     uid: {
       type: String,
       default: null,
     },
-    uimage: {
-      type: String,
-      default: null,
-    },
-    name: {
+    author: {
       type: String,
       default: null,
     },
@@ -22,21 +18,25 @@ const discussionSchema = new mongoose.Schema(
       type: String,
       default: "description",
     },
+    image: {
+      type: String,
+      default: null,
+    },
+    url: {
+      type: String,
+      default: null,
+    },
     category: {
       type: String,
       default: "general",
     },
-    email: {
+    likes: {
       type: String,
       default: null,
     },
     comments: {
       type: String,
       default: null,
-    },
-    role: {
-      type: String,
-      default: "student",
     },
   },
   {
@@ -45,8 +45,7 @@ const discussionSchema = new mongoose.Schema(
   }
 );
 
-const Discussion =
-  mongoose.models.discussions ||
-  mongoose.model("discussions", discussionSchema);
+const Article =
+  mongoose.models.articles || mongoose.model("articles", articleSchema);
 
-module.exports = Discussion;
+module.exports = Article;

@@ -7,6 +7,10 @@ const {
   deleteUser,
   dashboard,
   listUsers,
+  addArticle,
+  listArticles,
+  updateArticle,
+  deleteArticle,
 } = require("../controllers/adminController");
 
 router.get("/", adminProfile);
@@ -17,5 +21,9 @@ router.delete("/delete-user", deleteUser);
 
 router.get("/dashboard", dashboard);
 router.get("/listUsers", listUsers);
+router.post("/addArticle", addArticle);
+router.get("/listArticles", listArticles);
+router.put("/updateArticle", updateArticle);
+router.delete("/deleteArticle", deleteArticle);
 
 module.exports = router;
