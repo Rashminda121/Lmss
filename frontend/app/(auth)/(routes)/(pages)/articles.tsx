@@ -12,10 +12,7 @@ interface Article {
   description: string;
   image: string;
   url: string;
-  readTime: string;
   author: string;
-  likes: number;
-  comments: number;
   category: string;
 }
 
@@ -80,12 +77,12 @@ const Articles: React.FC = () => {
   };
 
   return (
-    <section className="py-12 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-gray-50 to-white">
+    <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-12">
+        <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center mb-4">
-            <FaBookOpen className="text-indigo-600 text-2xl mr-3" />
-            <h2 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
+            <FaBookOpen className="text-indigo-600 text-3xl mr-3" />
+            <h2 className="text-4xl font-bold text-gray-900 sm:text-5xl">
               Featured Articles
             </h2>
           </div>
@@ -97,56 +94,55 @@ const Articles: React.FC = () => {
         <div className="relative">
           <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-300 ease-in-out"
+              className="flex transition-transform duration-500 ease-out"
               style={{
                 transform: `translateX(-${
                   currentIndex * (100 / itemsToShow)
                 }%)`,
               }}
             >
-              {data.map((article, index) => (
+              {data.map((article) => (
                 <div
                   key={article._id}
                   className="flex-shrink-0 px-4"
                   style={{ width: `${100 / itemsToShow}%` }}
                 >
-                  <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+                  <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col border border-gray-100 hover:shadow-xl transition-all duration-300">
                     {article.image && (
-                      <div className="h-48 overflow-hidden">
+                      <div className="h-56 overflow-hidden relative">
                         <img
                           src={article.image}
                           alt={article.title}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                         />
+                        <div className="absolute top-4 left-4">
+                          <span className="inline-block bg-white/90 backdrop-blur-sm text-indigo-600 text-xs px-3 py-1 rounded-full font-semibold shadow-sm">
+                            {article.category}
+                          </span>
+                        </div>
                       </div>
                     )}
                     <div className="p-6 flex-1 flex flex-col">
-                      <div className="flex justify-between items-start mb-3">
-                        <span className="inline-block bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full uppercase font-semibold tracking-wide">
-                          {article.category}
-                        </span>
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex-1 min-w-0">
+                          <span className="line-clamp-2">{article.title}</span>
+                        </h3>
                         <a
                           href={article.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-gray-400 hover:text-indigo-600 transition-colors"
+                          className="text-gray-400 hover:text-indigo-600 transition-colors flex-shrink-0 mt-1 sm:mt-0"
                           title="View full article"
                         >
-                          <FaLink className="text-lg" />
+                          <FaLink className="text-xl" />
                         </a>
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900 mb-2 line-clamp-2">
-                        {article.title}
-                      </h3>
-                      <p className="text-gray-600 mb-4 flex-1 line-clamp-4">
+                      <p className="text-gray-600 mb-4 flex-1 max-h-24 overflow-y-auto no-scrollbar p-1 text-sm sm:text-base">
                         {article.description}
                       </p>
-                      <div className="flex items-center justify-between mt-auto">
-                        <span className="text-sm text-gray-500">
-                          {article.readTime || "5 min read"}
-                        </span>
-                        <span className="text-sm font-medium text-indigo-600">
-                          {article.author}
+                      <div className="flex justify-end">
+                        <span className="text-sm font-medium text-gray-500 italic">
+                          - {article.author}
                         </span>
                       </div>
                     </div>
@@ -159,32 +155,32 @@ const Articles: React.FC = () => {
           <button
             onClick={prevSlide}
             disabled={currentIndex === 0}
-            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-4 p-3 rounded-full bg-white shadow-md text-gray-800 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all z-10"
+            className="absolute left-0 top-1/2 -translate-y-1/2 -ml-6 p-4 rounded-full bg-white shadow-lg text-gray-800 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all z-10"
             aria-label="Previous article"
           >
-            <FaArrowLeft />
+            <FaArrowLeft className="text-xl" />
           </button>
           <button
             onClick={nextSlide}
             disabled={currentIndex >= data.length - itemsToShow}
-            className="absolute right-0 top-1/2 -translate-y-1/2 -mr-4 p-3 rounded-full bg-white shadow-md text-gray-800 hover:bg-indigo-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all z-10"
+            className="absolute right-0 top-1/2 -translate-y-1/2 -mr-6 p-4 rounded-full bg-white shadow-lg text-gray-800 hover:bg-indigo-100 hover:text-indigo-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all z-10"
             aria-label="Next article"
           >
-            <FaArrowRight />
+            <FaArrowRight className="text-xl" />
           </button>
         </div>
 
-        <div className="flex justify-center mt-8 space-x-2">
+        <div className="flex justify-center mt-12 space-x-3">
           {Array.from({ length: Math.ceil(data.length / itemsToShow) }).map(
             (_, i) => (
               <button
                 key={i}
                 onClick={() => setCurrentIndex(i * itemsToShow)}
-                className={`w-3 h-3 rounded-full transition-colors ${
+                className={`w-3 h-3 rounded-full transition-all ${
                   currentIndex >= i * itemsToShow &&
                   currentIndex < (i + 1) * itemsToShow
-                    ? "bg-indigo-600"
-                    : "bg-gray-300"
+                    ? "bg-indigo-600 w-6"
+                    : "bg-gray-300 hover:bg-gray-400"
                 }`}
                 aria-label={`Go to slide ${i + 1}`}
               />
