@@ -1,111 +1,56 @@
 "use client";
-import React, { useState } from "react";
+import axios from "axios";
+import { useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
+import { FaArrowRight, FaBan } from "react-icons/fa";
 
-const articles = [
-  {
-    id: 1,
-    title: "Exploring React 18 Features",
-    description:
-      "Learn about the latest features in React 18, including automatic batching and concurrent rendering.",
-    image: "https://source.unsplash.com/featured/?react",
-    link: "#",
-    date: "May 15, 2023",
-    readTime: "5 min read",
-    author: "Sarah Johnson",
-    likes: 124,
-    comments: 28,
-    category: "React",
-  },
-  {
-    id: 2,
-    title: "Tailwind CSS Tips & Tricks",
-    description:
-      "Boost your UI development with these essential Tailwind CSS techniques and shortcuts.",
-    image: "https://source.unsplash.com/featured/?tailwindcss",
-    link: "#",
-    date: "June 2, 2023",
-    readTime: "4 min read",
-    author: "Michael Chen",
-    likes: 89,
-    comments: 15,
-    category: "CSS",
-  },
-  {
-    id: 3,
-    title: "Understanding JavaScript Closures",
-    description:
-      "A deep dive into closures in JavaScript with practical examples and use cases.",
-    image: "https://source.unsplash.com/featured/?javascript",
-    link: "#",
-    date: "June 10, 2023",
-    readTime: "7 min read",
-    author: "David Wilson",
-    likes: 156,
-    comments: 42,
-    category: "JavaScript",
-  },
-  {
-    id: 4,
-    title: "The Complete Guide to Next.js",
-    description:
-      "Master server-side rendering, static generation, and API routes with Next.js.",
-    image: "https://source.unsplash.com/featured/?nextjs",
-    link: "#",
-    date: "June 18, 2023",
-    readTime: "10 min read",
-    author: "Emma Davis",
-    likes: 210,
-    comments: 35,
-    category: "React",
-  },
-  {
-    id: 5,
-    title: "State Management in 2023",
-    description:
-      "Comparing Redux, Context API, Zustand, and other state management solutions.",
-    image: "https://source.unsplash.com/featured/?code",
-    link: "#",
-    date: "July 5, 2023",
-    readTime: "8 min read",
-    author: "James Rodriguez",
-    likes: 178,
-    comments: 47,
-    category: "Frontend",
-  },
-  {
-    id: 6,
-    title: "TypeScript Best Practices",
-    description:
-      "Learn how to write cleaner, more maintainable TypeScript code with these patterns.",
-    image: "https://source.unsplash.com/featured/?typescript",
-    link: "#",
-    date: "July 12, 2023",
-    readTime: "6 min read",
-    author: "Sophia Kim",
-    likes: 145,
-    comments: 22,
-    category: "TypeScript",
-  },
-  {
-    id: 7,
-    title: "TypeScript Best Practices",
-    description:
-      "Learn how to write cleaner, more maintainable TypeScript code with these patterns.",
-    image: "https://source.unsplash.com/featured/?typescript",
-    link: "#",
-    date: "July 12, 2023",
-    readTime: "6 min read",
-    author: "Sophia Kim",
-    likes: 145,
-    comments: 22,
-    category: "TypeScript",
-  },
-];
+interface Article {
+  _id: string;
+  uid: string;
+  title: string;
+  description: string;
+  image: string;
+  url: string;
+  author: string;
+  category: string;
+}
 
 const CommunityArticles = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
   const [visibleArticles, setVisibleArticles] = useState(6);
+  const [data, setData] = useState<Article[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const hasFetchedData = useRef(false);
+
+  const getData = async () => {
+    setIsLoading(true);
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/admin/listArticles"
+      );
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title: "Failed to fetch articles",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!hasFetchedData.current) {
+      getData();
+      hasFetchedData.current = true;
+    }
+  }, []);
 
   const categories = [
     "All",
@@ -118,7 +63,7 @@ const CommunityArticles = () => {
     "Other",
   ];
 
-  const filteredArticles = articles
+  const filteredArticles = data
     .filter((article) => {
       const matchesSearch =
         article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -135,10 +80,32 @@ const CommunityArticles = () => {
     setVisibleArticles((prev) => prev + 3);
   };
 
+  // Skeleton loader for articles
+  const ArticleSkeleton = () => (
+    <div className="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 animate-pulse">
+      <div className="relative h-52 bg-gray-200"></div>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-3">
+          <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+        </div>
+        <div className="h-6 bg-gray-200 rounded w-3/4 mb-3"></div>
+        <div className="space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-full"></div>
+          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+          <div className="h-4 bg-gray-200 rounded w-2/3"></div>
+        </div>
+        <div className="flex items-center mt-6">
+          <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+        </div>
+        <div className="h-10 mt-4 bg-gray-200 rounded"></div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="text-center mb-16">
-        <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
           Community Knowledge
         </h1>
         <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -164,7 +131,7 @@ const CommunityArticles = () => {
           </div>
           <input
             type="text"
-            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
             placeholder="Search articles by title or description..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -176,10 +143,10 @@ const CommunityArticles = () => {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
                 activeCategory === category
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  ? "bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-md"
+                  : "bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-sm"
               }`}
             >
               {category}
@@ -188,10 +155,16 @@ const CommunityArticles = () => {
         </div>
       </div>
 
-      {filteredArticles.length === 0 ? (
+      {isLoading ? (
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+          {[...Array(6)].map((_, i) => (
+            <ArticleSkeleton key={i} />
+          ))}
+        </div>
+      ) : filteredArticles.length === 0 ? (
         <div className="text-center py-12">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-16 w-16 text-gray-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -199,14 +172,14 @@ const CommunityArticles = () => {
             <path
               strokeLinecap="round"
               strokeLinejoin="round"
-              strokeWidth={2}
+              strokeWidth={1.5}
               d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
-          <h3 className="mt-2 text-lg font-medium text-gray-900">
+          <h3 className="mt-4 text-xl font-medium text-gray-900">
             No articles found
           </h3>
-          <p className="mt-1 text-gray-500">
+          <p className="mt-2 text-gray-500 max-w-md mx-auto">
             Try adjusting your search or filter to find what you're looking for.
           </p>
           <div className="mt-6">
@@ -215,7 +188,7 @@ const CommunityArticles = () => {
                 setSearchTerm("");
                 setActiveCategory("All");
               }}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              className="inline-flex items-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200"
             >
               Reset filters
             </button>
@@ -226,42 +199,35 @@ const CommunityArticles = () => {
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {filteredArticles.map((article) => (
               <div
-                key={article.id}
+                key={article._id}
                 className="group bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 border border-gray-100"
               >
                 <div className="relative h-52 overflow-hidden">
                   <img
-                    src={article.image}
+                    src={
+                      article.image ||
+                      "https://source.unsplash.com/featured/?technology"
+                    }
                     alt={article.title}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src =
+                        "https://source.unsplash.com/featured/?technology";
+                    }}
                   />
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent"></div>
-                  <div className="absolute bottom-4 left-4 flex space-x-2">
-                    <span className="bg-blue-600/90 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-                      {article.readTime}
+                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-4 left-4">
+                    <span className="text-xs bg-blue-600/90 text-white px-2.5 py-1 rounded-full backdrop-blur-sm">
+                      {article.category}
                     </span>
-                    {article.likes > 100 && (
-                      <span className="bg-green-600/90 text-white text-xs font-medium px-2.5 py-1 rounded-full backdrop-blur-sm">
-                        Popular
-                      </span>
-                    )}
                   </div>
                 </div>
 
                 <div className="p-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <span className="text-sm text-gray-500">
-                      {article.date}
-                    </span>
-                    <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                      {article.category}
-                    </span>
-                  </div>
-
                   <h2 className="text-xl font-bold text-gray-800 mb-3 group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
                     {article.title}
                   </h2>
-                  <p className="text-gray-600 mb-4 line-clamp-3">
+                  <p className="text-gray-600 mb-4 w-full max-h-24 overflow-y-auto p-2 no-scrollbar">
                     {article.description}
                   </p>
 
@@ -269,7 +235,7 @@ const CommunityArticles = () => {
                     <span className="flex items-center">
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
+                        className="h-4 w-4 mr-1 text-gray-400"
                         viewBox="0 0 20 20"
                         fill="currentColor"
                       >
@@ -279,61 +245,28 @@ const CommunityArticles = () => {
                           clipRule="evenodd"
                         />
                       </svg>
-                      {article.author}
+                      {article.author || "Unknown Author"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between border-t pt-4">
-                    <div className="flex space-x-4">
-                      <button className="flex items-center text-gray-500 hover:text-red-500 transition-colors">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-1"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        {article.likes}
-                      </button>
-                      <button className="flex items-center text-gray-500 hover:text-blue-500 transition-colors">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          className="h-5 w-5 mr-1"
-                          viewBox="0 0 20 20"
-                          fill="currentColor"
-                        >
-                          <path
-                            fillRule="evenodd"
-                            d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z"
-                            clipRule="evenodd"
-                          />
-                        </svg>
-                        {article.comments}
-                      </button>
-                    </div>
-
+                  <div className="border-t pt-4">
                     <a
-                      href={article.link}
-                      className="inline-flex items-center text-blue-600 hover:text-blue-800 font-medium transition-colors duration-200 group/read"
+                      href={article.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center justify-center w-full px-4 py-2.5 text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 rounded-lg hover:from-blue-700 hover:to-blue-600 transition-all duration-200 transform hover:scale-[1.02] shadow-sm"
                     >
-                      Read
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-5 w-5 ml-1 transition-transform duration-200 group-hover/read:translate-x-1"
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
+                      {article.url ? (
+                        <div className="flex items-center text-white hover:underline text-sm">
+                          Read Article
+                          <FaArrowRight className="h-4 w-4 ml-2" />
+                        </div>
+                      ) : (
+                        <div className="flex items-center text-white text-sm opacity-50 cursor-not-allowed">
+                          No URL
+                          <FaBan className="h-4 w-4 ml-2" />
+                        </div>
+                      )}
                     </a>
                   </div>
                 </div>
@@ -341,16 +274,17 @@ const CommunityArticles = () => {
             ))}
           </div>
 
-          {visibleArticles < articles.length && (
-            <div className="mt-16 text-center">
-              <button
-                onClick={loadMoreArticles}
-                className="px-6 py-3 border-2 border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors duration-200 hover:shadow-md"
-              >
-                Browse More Articles
-              </button>
-            </div>
-          )}
+          {visibleArticles < data.length &&
+            filteredArticles.length >= visibleArticles && (
+              <div className="mt-16 text-center">
+                <button
+                  onClick={loadMoreArticles}
+                  className="px-6 py-3 border-2 border-blue-600 text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-all duration-200 hover:shadow-md transform hover:scale-105"
+                >
+                  Load More Articles
+                </button>
+              </div>
+            )}
         </>
       )}
     </div>
