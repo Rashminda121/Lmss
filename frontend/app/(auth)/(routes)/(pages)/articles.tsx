@@ -94,7 +94,7 @@ const Articles: React.FC = () => {
         <div className="relative">
           <div className="overflow-hidden">
             <div
-              className="flex transition-transform duration-500 ease-out"
+              className="flex transition-transform duration-500 ease-out mb-4"
               style={{
                 transform: `translateX(-${
                   currentIndex * (100 / itemsToShow)
@@ -127,15 +127,17 @@ const Articles: React.FC = () => {
                         <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex-1 min-w-0">
                           <span className="line-clamp-2">{article.title}</span>
                         </h3>
-                        <a
-                          href={article.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-gray-400 hover:text-indigo-600 transition-colors flex-shrink-0 mt-1 sm:mt-0"
-                          title="View full article"
-                        >
-                          <FaLink className="text-xl" />
-                        </a>
+                        {article.url && (
+                          <a
+                            href={article.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-indigo-600 transition-colors flex-shrink-0 mt-1 sm:mt-0"
+                            title="View full article"
+                          >
+                            <FaLink className="text-xl" />
+                          </a>
+                        )}
                       </div>
                       <p className="text-gray-600 mb-4 flex-1 max-h-24 overflow-y-auto no-scrollbar p-1 text-sm sm:text-base">
                         {article.description}
