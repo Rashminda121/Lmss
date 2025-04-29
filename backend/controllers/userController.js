@@ -9,13 +9,20 @@ const userProfile = async (req, res) => {
   try {
     const { uid, email } = req.query;
 
-    if (!uid || !email) {
+    if (!uid) {
       return res.status(400).json({ message: "Missing user ID or email." });
     }
+    let user = null;
 
-    const user = await User.findOne({ uid: uid, email: email }).select(
-      "name email phone image role address updatedAt"
-    );
+    if (!email) {
+      user = await User.findOne({ uid: uid }).select(
+        "name email phone image role address updatedAt"
+      );
+    } else {
+      user = await User.findOne({ uid: uid, email: email }).select(
+        "name email phone image role address updatedAt"
+      );
+    }
 
     if (!user) {
       return res.status(404).json({ message: "User not found." });

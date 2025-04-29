@@ -15,14 +15,6 @@ const createUser = (req, res) => {
   res.send("Admin creates a new user");
 };
 
-const updateUser = (req, res) => {
-  res.send("Admin updates the user");
-};
-
-const deleteUser = (req, res) => {
-  res.send("Admin deletes the user");
-};
-
 const dashboard = async (req, res) => {
   try {
     const discussionCount = await Discussion.countDocuments({});
@@ -58,6 +50,82 @@ const dashboard = async (req, res) => {
     res
       .status(500)
       .json({ message: "Error getting dashboard data", error: error.message });
+  }
+};
+
+const updateUser = async (req, res) => {
+  try {
+    const { _id, name, phone, image, role, address } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    if (!name || !role) {
+      return res.status(400).json({ message: "Name and role are required" });
+    }
+
+    const allowedRoles = ["admin", "student", "lecturer"];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: "Invalid role specified" });
+    }
+
+    const existingUser = await User.findById(_id);
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const updateData = {
+      name,
+      phone: phone || existingUser.phone,
+      image: image || existingUser.image,
+      role,
+      address: address || existingUser.address,
+      updatedAt: new Date(),
+    };
+
+    const updatedUser = await User.findByIdAndUpdate(_id, updateData, {
+      new: true,
+      runValidators: true,
+    });
+
+    res.status(200).json({
+      message: "User updated successfully",
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      message: "Error updating user",
+      error: error.message,
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "User ID is required" });
+    }
+
+    const deletedUser = await User.findByIdAndDelete(_id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "User deleted successfully",
+      userId: _id,
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({
+      message: "Error deleting user",
+      error: error.message,
+    });
   }
 };
 
@@ -189,6 +257,208 @@ const listArticles = async (req, res) => {
   }
 };
 
+const updateCourse = async (req, res) => {
+  try {
+    const { id, categoryId, isPublished, title, description, imageUrl } =
+      req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+    if (!title || !description || !categoryId) {
+      return res.status(400).json({
+        message: "Title, description, and category are required",
+      });
+    }
+
+    const mysqlConnection = await connectMysqlDB();
+
+    // First check if course exists
+    const [existingCourses] = await mysqlConnection.execute(
+      `SELECT * FROM course WHERE id = ?`,
+      [id]
+    );
+
+    if (existingCourses.length === 0) {
+      await mysqlConnection.end();
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    // Prepare the update data
+    const updateData = {
+      title,
+      description,
+      categoryId,
+      isPublished: isPublished ? 1 : 0, // Convert boolean to MySQL tinyint
+      imageUrl,
+      updatedAt: new Date(),
+    };
+
+    // Execute the update
+    await mysqlConnection.execute(
+      `UPDATE course
+       SET title = ?, description = ?, categoryId = ?, 
+           isPublished = ?, imageUrl = ?, updatedAt = ?
+       WHERE id = ?`,
+      [
+        updateData.title,
+        updateData.description,
+        updateData.categoryId,
+        updateData.isPublished,
+        updateData.imageUrl,
+        updateData.updatedAt,
+        id,
+      ]
+    );
+
+    await mysqlConnection.end();
+
+    res.status(200).json({
+      message: "Course updated successfully",
+      course: {
+        id,
+        ...updateData,
+        isPublished: Boolean(updateData.isPublished),
+      },
+    });
+  } catch (error) {
+    console.error("Error updating course:", error);
+    res.status(500).json({
+      message: "Error updating course",
+      error: error.message,
+    });
+  }
+};
+
+const updateCoursePublish = async (req, res) => {
+  try {
+    const { id, isPublished, updatedAt } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
+    const mysqlConnection = await connectMysqlDB();
+
+    // First check if course exists
+    const [existingCourses] = await mysqlConnection.execute(
+      `SELECT * FROM course WHERE id = ?`,
+      [id]
+    );
+
+    if (existingCourses.length === 0) {
+      await mysqlConnection.end();
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    const updateData = {
+      isPublished: isPublished ? 1 : 0,
+      updatedAt: new Date(),
+    };
+
+    // Execute the update
+    await mysqlConnection.execute(
+      `UPDATE course 
+       SET isPublished = ?, updatedAt = ?
+       WHERE id = ?`,
+      [updateData.isPublished, updateData.updatedAt, id]
+    );
+
+    await mysqlConnection.end();
+
+    res.status(200).json({
+      message: "Course toggle updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating course:", error);
+    res.status(500).json({
+      message: "Error updating course",
+      error: error.message,
+    });
+  }
+};
+
+const deleteCourse = async (req, res) => {
+  try {
+    const { id } = req.body;
+
+    if (!id) {
+      return res.status(400).json({ message: "Course ID is required" });
+    }
+
+    const mysqlConnection = await connectMysqlDB();
+
+    // First check if course exists
+    const [existingCourses] = await mysqlConnection.execute(
+      `SELECT * FROM course WHERE id = ?`,
+      [id]
+    );
+
+    if (existingCourses.length === 0) {
+      await mysqlConnection.end();
+      return res.status(404).json({ message: "Course not found" });
+    }
+
+    await mysqlConnection.beginTransaction();
+
+    try {
+      await mysqlConnection.execute(`DELETE FROM chapter WHERE courseId = ?`, [
+        id,
+      ]);
+
+      await mysqlConnection.execute(`DELETE FROM course WHERE id = ?`, [id]);
+
+      await mysqlConnection.commit();
+
+      res.status(200).json({
+        message: "Course and all associated chapters deleted successfully",
+      });
+    } catch (error) {
+      await mysqlConnection.rollback();
+      throw error;
+    } finally {
+      await mysqlConnection.end();
+    }
+  } catch (error) {
+    console.error("Error deleting course:", error);
+    res.status(500).json({
+      message: "Error deleting course",
+      error: error.message,
+    });
+  }
+};
+
+const listCourses = async (req, res) => {
+  try {
+    const mysqlConnection = await connectMysqlDB();
+    const [courses] = await mysqlConnection.execute("SELECT * FROM course");
+
+    await mysqlConnection.end();
+
+    res.status(200).json(courses);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting courses",
+      error: error.message,
+    });
+  }
+};
+const listCourseCategories = async (req, res) => {
+  try {
+    const mysqlConnection = await connectMysqlDB();
+    const [category] = await mysqlConnection.execute("SELECT * FROM category");
+
+    await mysqlConnection.end();
+
+    res.status(200).json(category);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting category",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
@@ -200,4 +470,9 @@ module.exports = {
   listArticles,
   updateArticle,
   deleteArticle,
+  listCourses,
+  listCourseCategories,
+  updateCourse,
+  deleteCourse,
+  updateCoursePublish,
 };

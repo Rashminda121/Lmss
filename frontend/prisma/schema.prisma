@@ -22,7 +22,7 @@ model Course {
   userId String 
   title String @db.Text
   description String? @db.Text
-  imageUrl String? @db.Text
+  imageUrl String? @db.MediumText
   price Float?
   isPublished Boolean @default(false)
 

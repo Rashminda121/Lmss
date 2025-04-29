@@ -11,13 +11,18 @@ const {
   listArticles,
   updateArticle,
   deleteArticle,
+  listCourses,
+  listCourseCategories,
+  updateCourse,
+  deleteCourse,
+  updateCoursePublish,
 } = require("../controllers/adminController");
 
 router.get("/", adminProfile);
 
 router.post("/create-user", createUser);
 router.put("/update-user", updateUser);
-router.delete("/delete-user", deleteUser);
+router.delete("/deleteUser", deleteUser);
 
 router.get("/dashboard", dashboard);
 router.get("/listUsers", listUsers);
@@ -25,5 +30,13 @@ router.post("/addArticle", addArticle);
 router.get("/listArticles", listArticles);
 router.put("/updateArticle", updateArticle);
 router.delete("/deleteArticle", deleteArticle);
+
+router.put("/updateUser", updateUser);
+
+router.get("/listCourses", listCourses);
+router.get("/listCourseCategories", listCourseCategories);
+router.put("/updateCourse", updateCourse);
+router.delete("/deleteCourse", deleteCourse);
+router.put("/updateCoursePublish", updateCoursePublish);
 
 module.exports = router;
