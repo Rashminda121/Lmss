@@ -22,7 +22,7 @@ const dashboard = async (req, res) => {
     const eventCount = await Event.countDocuments({});
     const disCommentCount = await DisComment.countDocuments({});
     const eventCommentCount = await EventComment.countDocuments({});
-    //const articleCount = await Articles.countDocuments({});
+    const articleCount = await Article.countDocuments({});
 
     const mysqlConnection = await connectMysqlDB();
     const [courses] = await mysqlConnection.execute(
@@ -42,6 +42,7 @@ const dashboard = async (req, res) => {
       commentCount,
       disCommentCount,
       eventCommentCount,
+      articleCount,
     };
 
     res.status(200).json(countData);
