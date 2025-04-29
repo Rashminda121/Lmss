@@ -9,6 +9,7 @@ import {
   FaLink,
   FaTimes,
   FaImage,
+  FaComment,
 } from "react-icons/fa";
 import { useState, useEffect, useRef } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -42,7 +43,7 @@ interface Event {
   url: string;
   image: string;
   status: string;
-  comment_count: number;
+  comments: number;
   createdAt: string;
   eventUrl: string;
 }
@@ -532,7 +533,8 @@ const AdminEvents = () => {
                           </span>
                         </td> */}
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 hidden xl:table-cell">
-                          Comments: {event.comment_count || 0}
+                          <FaComment className="inline-block mr-2 text-gray-600" />
+                          {event.comments || 0}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden xl:table-cell">
                           {new Date(event.createdAt).toLocaleDateString()}

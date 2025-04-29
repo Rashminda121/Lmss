@@ -48,6 +48,10 @@ const eventSchema = new mongoose.Schema(
       type: String,
       default: null,
     },
+    comments: {
+      type: Number,
+      default: null,
+    },
     status: {
       type: String,
       default: false,

@@ -769,11 +769,24 @@ const listEvents = async (req, res) => {
       return res.status(404).json({ message: "No events found." });
     }
 
-    res.status(200).json(events);
+    const updatedEvents = await Promise.all(
+      events.map(async (event) => {
+        const commentCount = await EventComment.countDocuments({
+          eid: event._id,
+        });
+        return {
+          ...event.toObject(),
+          comments: commentCount,
+        };
+      })
+    );
+
+    res.status(200).json(updatedEvents);
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Error getting events", error: error.message });
+    res.status(500).json({
+      message: "Error getting events",
+      error: error.message,
+    });
   }
 };
 
