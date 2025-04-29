@@ -56,7 +56,7 @@ const AdminDiscussions = () => {
         "http://localhost:4000/api/admin/listDiscussions"
       );
       setData(response.data);
-      console.log(response.data);///////////////////
+      console.log(response.data); ///////////////////
     } catch (error) {
       console.error("Error fetching discussions:", error);
       Swal.fire({
@@ -386,7 +386,7 @@ const AdminDiscussions = () => {
                           <div className="text-sm font-medium text-gray-900 line-clamp-1">
                             {discussion.title}
                           </div>
-                          <div className="text-xs text-gray-500 line-clamp-2">
+                          <div className="text-xs text-gray-500 h-16 overflow-y-auto">
                             {discussion.description}
                           </div>
                         </td>

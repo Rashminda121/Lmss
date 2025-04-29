@@ -528,6 +528,7 @@ const updateDiscussion = async (req, res) => {
     });
   }
 };
+
 const deleteDiscussion = async (req, res) => {
   try {
     const { _id } = req.body;
@@ -578,6 +579,204 @@ const listDiscussions = async (req, res) => {
   }
 };
 
+const addEvent = async (req, res) => {
+  try {
+    const {
+      uid,
+      title,
+      date,
+      time,
+      location,
+      description,
+      category,
+      type,
+      url,
+      image,
+    } = req.body;
+
+    const requiredFields = {
+      uid: "User ID is required",
+      title: "Title is required",
+      date: "Date is required",
+      location: "Location is required",
+      description: "Description is required",
+      category: "Category is required",
+      type: "Event type is required",
+      image: "Image is required",
+    };
+
+    const missingFields = [];
+    for (const [field, message] of Object.entries(requiredFields)) {
+      if (!req.body[field]) {
+        missingFields.push(message);
+      }
+    }
+
+    if (missingFields.length > 0) {
+      return res.status(400).json({
+        message: "Missing required fields",
+        errors: missingFields,
+      });
+    }
+
+    if (isNaN(new Date(date).getTime())) {
+      return res.status(400).json({
+        message: "Invalid date format",
+      });
+    }
+
+    const existingUser = await User.findOne({ uid });
+    if (!existingUser) {
+      return res.status(404).json({
+        message: "User not found",
+        details: `No user found with UID: ${uid}`,
+      });
+    }
+
+    const newEvent = new Event({
+      uid,
+      title,
+      date: new Date(date),
+      time: time || null,
+      location,
+      description,
+      category,
+      type,
+      url: url || null,
+      image,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      status: false,
+    });
+
+    const savedEvent = await newEvent.save();
+
+    res.status(201).json({
+      message: "Event created successfully",
+    });
+  } catch (error) {
+    console.error("Error creating event:", error);
+    res.status(500).json({
+      message: "Error creating event",
+      error: error.message,
+      details: error.errors
+        ? Object.values(error.errors).map((e) => e.message)
+        : null,
+    });
+  }
+};
+
+const updateEvent = async (req, res) => {
+  try {
+    const {
+      _id,
+      title,
+      date,
+      time,
+      location,
+      description,
+      category,
+      type,
+      url,
+      image,
+    } = req.body;
+
+    // Required fields validation
+    if (
+      !_id ||
+      !title ||
+      !date ||
+      !location ||
+      !description ||
+      !category ||
+      !type
+    ) {
+      return res.status(400).json({
+        message:
+          "Missing required fields. _id, title, date, location, description, category, and type are required.",
+      });
+    }
+
+    // Validate date format (optional)
+    if (isNaN(new Date(date).getTime())) {
+      return res.status(400).json({
+        message: "Invalid date format",
+      });
+    }
+
+    const updateData = {
+      title,
+      date: new Date(date),
+      time: time || null,
+      location,
+      description,
+      category,
+      type,
+      url: url || null,
+      image: image || null,
+      updatedAt: new Date(),
+    };
+
+    const updatedEvent = await Event.findByIdAndUpdate(_id, updateData, {
+      new: true,
+    });
+
+    if (!updatedEvent) {
+      return res.status(404).json({
+        message: "Event not found",
+      });
+    }
+
+    res.status(200).json({
+      message: "Event updated successfully",
+      event: updatedEvent,
+    });
+  } catch (error) {
+    console.error("Error updating event:", error);
+    res.status(500).json({
+      message: "Error updating event",
+      error: error.message,
+    });
+  }
+};
+
+const deleteEvent = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedEvent = await Event.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Event deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting event",
+      error: error.message,
+    });
+  }
+};
+
+const listEvents = async (req, res) => {
+  try {
+    const events = await Event.find({});
+
+    if (!events || events.length === 0) {
+      return res.status(404).json({ message: "No events found." });
+    }
+
+    res.status(200).json(events);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting events", error: error.message });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
@@ -598,4 +797,8 @@ module.exports = {
   deleteDiscussion,
   addDiscussion,
   listDiscussions,
+  listEvents,
+  updateEvent,
+  deleteEvent,
+  addEvent,
 };

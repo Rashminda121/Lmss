@@ -7,203 +7,145 @@ import {
   FaCalendarAlt,
   FaMapMarkerAlt,
   FaLink,
+  FaTimes,
+  FaImage,
 } from "react-icons/fa";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useUser } from "@clerk/nextjs";
+import Swal from "sweetalert2";
+import axios from "axios";
+
+const categories = [
+  "All",
+  "Conference",
+  "Expo",
+  "Hackathon",
+  "Education",
+  "Technology",
+  "General",
+  "Workshop",
+  "Other",
+];
+
+const types = ["All", "Online", "In-person", "Hybrid"];
+
+interface Event {
+  _id: string;
+  uid: string;
+  title: string;
+  date: string;
+  time: string;
+  location: string;
+  description: string;
+  category: string;
+  type: string;
+  url: string;
+  image: string;
+  status: string;
+  comment_count: number;
+  createdAt: string;
+  eventUrl: string;
+}
 
 const AdminEvents = () => {
-  const allEvents = [
-    {
-      id: 1,
-      email: "organizer1@example.com",
-      title: "Tech Conference 2023",
-      description: "Annual technology conference featuring top speakers",
-      date: "2023-11-15",
-      location: "Convention Center, San Francisco",
-      eventUrl: "https://techconf.example.com",
-      image: "https://source.unsplash.com/random/300x200/?conference",
-      category: "Technology",
-      type: "Conference",
-      status: "Active",
-      comment_count: 42,
-      createdAt: "2023-09-01",
-    },
-    {
-      id: 2,
-      email: "organizer2@example.com",
-      title: "Music Festival",
-      description: "Three days of live music and performances",
-      date: "2023-12-10",
-      location: "Central Park, New York",
-      eventUrl: "https://musicfest.example.com",
-      image: "https://source.unsplash.com/random/300x200/?festival",
-      category: "Music",
-      type: "Festival",
-      status: "Upcoming",
-      comment_count: 18,
-      createdAt: "2023-10-15",
-    },
-    {
-      id: 3,
-      email: "organizer3@example.com",
-      title: "Art Exhibition",
-      description: "Contemporary art from emerging artists",
-      date: "2023-11-20",
-      location: "Modern Art Museum, Chicago",
-      eventUrl: "https://artexhibit.example.com",
-      image: "https://source.unsplash.com/random/300x200/?art",
-      category: "Art",
-      type: "Exhibition",
-      status: "Active",
-      comment_count: 25,
-      createdAt: "2023-08-20",
-    },
-    {
-      id: 4,
-      email: "organizer4@example.com",
-      title: "Charity Run",
-      description: "5K run to support local charities",
-      date: "2023-12-05",
-      location: "City Park, Boston",
-      eventUrl: "https://charityrun.example.com",
-      image: "https://source.unsplash.com/random/300x200/?running",
-      category: "Sports",
-      type: "Charity",
-      status: "Upcoming",
-      comment_count: 12,
-      createdAt: "2023-09-10",
-    },
-    {
-      id: 5,
-      email: "organizer5@example.com",
-      title: "Startup Pitch Night",
-      description: "Early-stage startups pitch to investors",
-      date: "2023-11-25",
-      location: "Innovation Hub, Austin",
-      eventUrl: "https://startuppitch.example.com",
-      image: "https://source.unsplash.com/random/300x200/?startup",
-      category: "Business",
-      type: "Networking",
-      status: "Active",
-      comment_count: 30,
-      createdAt: "2023-10-01",
-    },
-    {
-      id: 6,
-      email: "organizer6@example.com",
-      title: "Food & Wine Tasting",
-      description: "Sample gourmet food and fine wines",
-      date: "2023-12-15",
-      location: "Grand Hotel, Miami",
-      eventUrl: "https://foodwine.example.com",
-      image: "https://source.unsplash.com/random/300x200/?food",
-      category: "Food",
-      type: "Tasting",
-      status: "Upcoming",
-      comment_count: 8,
-      createdAt: "2023-10-20",
-    },
-    {
-      id: 7,
-      email: "organizer7@example.com",
-      title: "Workshop: Digital Marketing",
-      description: "Learn digital marketing strategies",
-      date: "2023-11-30",
-      location: "Business Center, Seattle",
-      eventUrl: "https://marketingworkshop.example.com",
-      image: "https://source.unsplash.com/random/300x200/?workshop",
-      category: "Education",
-      type: "Workshop",
-      status: "Active",
-      comment_count: 15,
-      createdAt: "2023-09-15",
-    },
-    {
-      id: 8,
-      email: "organizer8@example.com",
-      title: "Film Premiere",
-      description: "World premiere of independent film",
-      date: "2023-12-20",
-      location: "Paramount Theater, Los Angeles",
-      eventUrl: "https://filmpremiere.example.com",
-      image: "https://source.unsplash.com/random/300x200/?movie",
-      category: "Entertainment",
-      type: "Premiere",
-      status: "Upcoming",
-      comment_count: 22,
-      createdAt: "2023-11-01",
-    },
-    {
-      id: 9,
-      email: "organizer9@example.com",
-      title: "Book Signing",
-      description: "Meet the author and get signed copies",
-      date: "2023-12-01",
-      location: "Bookstore, Portland",
-      eventUrl: "https://booksigning.example.com",
-      image: "https://source.unsplash.com/random/300x200/?book",
-      category: "Literature",
-      type: "Signing",
-      status: "Active",
-      comment_count: 10,
-      createdAt: "2023-10-05",
-    },
-    {
-      id: 10,
-      email: "organizer10@example.com",
-      title: "Yoga Retreat",
-      description: "Weekend yoga and meditation retreat",
-      date: "2024-01-10",
-      location: "Mountain Resort, Denver",
-      eventUrl: "https://yogaretreat.example.com",
-      image: "https://source.unsplash.com/random/300x200/?yoga",
-      category: "Wellness",
-      type: "Retreat",
-      status: "Upcoming",
-      comment_count: 5,
-      createdAt: "2023-11-05",
-    },
-    {
-      id: 11,
-      email: "organizer11@example.com",
-      title: "Science Fair",
-      description: "Student science projects exhibition",
-      date: "2024-01-15",
-      location: "High School, Dallas",
-      eventUrl: "https://sciencefair.example.com",
-      image: "https://source.unsplash.com/random/300x200/?science",
-      category: "Education",
-      type: "Fair",
-      status: "Upcoming",
-      comment_count: 7,
-      createdAt: "2023-11-10",
-    },
-    {
-      id: 12,
-      email: "organizer12@example.com",
-      title: "Vintage Car Show",
-      description: "Display of classic and vintage cars",
-      date: "2024-02-05",
-      location: "Fairgrounds, Detroit",
-      eventUrl: "https://carshow.example.com",
-      image: "https://source.unsplash.com/random/300x200/?car",
-      category: "Automotive",
-      type: "Exhibition",
-      status: "Upcoming",
-      comment_count: 14,
-      createdAt: "2023-11-15",
-    },
-  ];
-
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const eventsPerPage = 10;
 
+  const [data, setData] = useState<Event[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const [formData, setFormData] = useState({
+    _id: "",
+    title: "",
+    date: "",
+    time: "",
+    location: "",
+    description: "",
+    category: "All",
+    type: "All",
+    url: "",
+    image: "",
+  });
+
+  const { user } = useUser();
+  const hasFetchedData = useRef(false);
+
+  const getData = async () => {
+    try {
+      const response = await axios.get(
+        "http://localhost:4000/api/admin/listEvents"
+      );
+      setData(response.data);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title: "Failed to fetch events",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!hasFetchedData.current) {
+      getData();
+      hasFetchedData.current = true;
+    }
+  }, []);
+
+  const handleChange = (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      // Check file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "error",
+          title: "Image size should be less than 5MB",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        return;
+      }
+
+      setIsUploading(true);
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setIsUploading(false);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   // Filter events based on search term
-  const filteredEvents = allEvents.filter((event) => {
+  const filteredEvents = data.filter((event) => {
     const searchLower = searchTerm.toLowerCase();
     return (
       event.title.toLowerCase().includes(searchLower) ||
-      event.email.toLowerCase().includes(searchLower) ||
       event.description.toLowerCase().includes(searchLower) ||
       event.location.toLowerCase().includes(searchLower) ||
       event.category.toLowerCase().includes(searchLower) ||
@@ -226,14 +168,133 @@ const AdminEvents = () => {
     setCurrentPage(1);
   }, [searchTerm]);
 
-  const handleEdit = (eventId: number) => {
-    console.log("Edit event:", eventId);
-    // Add your edit logic here
+  const handleEdit = (event: Event) => {
+    setIsEditMode(true);
+    setFormData({
+      _id: event._id,
+      title: event.title,
+      date: event.date,
+      time: event.time,
+      location: event.location,
+      description: event.description,
+      category: event.category,
+      type: event.type,
+      url: event.url,
+      image: event.image,
+    });
+    setIsModalOpen(true);
   };
 
-  const handleDelete = (eventId: number) => {
-    console.log("Delete event:", eventId);
-    // Add your delete logic here
+  const handleAddNew = () => {
+    setIsEditMode(false);
+    setFormData({
+      _id: "",
+      title: "",
+      date: "",
+      time: "",
+      location: "",
+      description: "",
+      category: "All",
+      type: "All",
+      url: "",
+      image: "",
+    });
+    setImagePreview(null);
+    setIsModalOpen(true);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const url = isEditMode
+        ? "http://localhost:4000/api/admin/updateEvent"
+        : "http://localhost:4000/api/admin/addEvent";
+
+      const response = await axios.post(url, {
+        ...formData,
+        image: imagePreview || formData.image,
+        uid: user?.id || "",
+      });
+
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "success",
+        title: isEditMode
+          ? "Event updated successfully!"
+          : "Event created successfully!",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+
+      setIsModalOpen(false);
+      getData();
+    } catch (error: any) {
+      console.error("Failed to save event:", error);
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title:
+          error.response?.data?.message ||
+          "Failed to save event. Please try again.",
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+        showClass: {
+          popup: "animate__animated animate__bounceInDown",
+        },
+        hideClass: {
+          popup: "animate__animated animate__bounceOutUp",
+        },
+      });
+    }
+  };
+
+  const handleDelete = async (eventId: string) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await axios.delete("http://localhost:4000/api/admin/deleteEvent", {
+          data: { _id: eventId },
+        });
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "success",
+          title: "Event deleted successfully!",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        getData();
+      } catch (error) {
+        console.error("Failed to delete event:", error);
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "error",
+          title: "Failed to delete event",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+      }
+    }
   };
 
   const handlePrevPage = () => {
@@ -249,27 +310,32 @@ const AdminEvents = () => {
   };
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 md:mb-8">
           <div>
-            <h2 className="text-3xl font-bold text-gray-800">
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-800">
               Event Management
             </h2>
-            <p className="text-gray-600 mt-2">Manage all registered events</p>
+            <p className="text-gray-600 mt-1 md:mt-2">
+              Manage all registered events
+            </p>
           </div>
-          <div className="mt-4 md:mt-0 flex space-x-3">
+          <div className="mt-3 md:mt-0 flex flex-col sm:flex-row gap-2 sm:gap-3">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
               <input
                 type="text"
                 placeholder="Search events..."
-                className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center transition-colors">
+            <button
+              onClick={handleAddNew}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors"
+            >
               <FaPlus className="mr-2" />
               Add Event
             </button>
@@ -284,49 +350,49 @@ const AdminEvents = () => {
                   <tr>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Event
                     </th>
-                    <th
+                    {/* <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell"
                     >
                       Organizer
-                    </th>
+                    </th> */}
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell"
                     >
                       Details
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell"
                     >
                       Category/Type
                     </th>
-                    <th
+                    {/* <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden sm:table-cell"
                     >
                       Status
-                    </th>
+                    </th> */}
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell"
                     >
                       Engagement
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden xl:table-cell"
                     >
                       Created
                     </th>
                     <th
                       scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                      className="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
                     >
                       Actions
                     </th>
@@ -336,55 +402,103 @@ const AdminEvents = () => {
                   {currentEvents.length > 0 ? (
                     currentEvents.map((event) => (
                       <tr
-                        key={event.id}
+                        key={event._id}
                         className="hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-4">
-                          <div className="flex items-center">
+                        <td className="px-4 py-4">
+                          <div className="flex items-start">
                             <div className="flex-shrink-0 h-16 w-24">
                               <img
                                 className="h-16 w-24 rounded-md object-cover"
-                                src={event.image}
+                                src={
+                                  event.image ||
+                                  "https://via.placeholder.com/96"
+                                }
                                 alt={event.title}
                               />
                             </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
+                            <div className="ml-3">
+                              <div className="text-sm font-medium text-gray-900 line-clamp-2">
                                 {event.title}
                               </div>
-                              <div className="text-sm text-gray-500 line-clamp-2">
+                              <div className="text-xs text-gray-500 h-20 overflow-y-auto">
                                 {event.description}
                               </div>
-                              <div className="mt-1 flex items-center text-sm text-gray-500">
+
+                              <div className="mt-1 flex items-center text-xs text-gray-500">
                                 <FaCalendarAlt className="mr-1" />
-                                {event.date}
+                                {new Date(event.date).toLocaleDateString(
+                                  "en-US",
+                                  {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  }
+                                )}
+                                {event.time && (
+                                  <>
+                                    {" "}
+                                    at{" "}
+                                    {new Date(
+                                      `1970-01-01T${event.time}`
+                                    ).toLocaleTimeString("en-US", {
+                                      hour: "numeric",
+                                      minute: "2-digit",
+                                      hour12: true,
+                                    })}
+                                  </>
+                                )}
                               </div>
-                              <div className="flex items-center text-sm text-gray-500">
+
+                              <div className="flex items-center text-xs text-gray-500">
                                 <FaMapMarkerAlt className="mr-1" />
                                 {event.location}
                               </div>
-                              <div className="flex items-center text-sm text-blue-500 hover:text-blue-700">
-                                <FaLink className="mr-1" />
-                                <a
-                                  href={event.eventUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                >
-                                  Event Link
-                                </a>
-                              </div>
+                              {event.url && (
+                                <div className="flex items-center text-xs text-blue-500 hover:text-blue-700">
+                                  <FaLink className="mr-1" />
+                                  <a
+                                    href={event.url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="truncate max-w-[120px] inline-block"
+                                  >
+                                    Event Link
+                                  </a>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {event.email}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
+                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 hidden md:table-cell">
+                          {event.email}
+                        </td> */}
+                        <td className="px-4 py-4 hidden lg:table-cell">
                           <div className="text-sm text-gray-900">
                             <div className="font-medium">Date:</div>
-                            <div className="text-gray-500">{event.date}</div>
+                            <div className="text-gray-500">
+                              {new Date(event.date).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
+                              {event.time && (
+                                <>
+                                  {" "}
+                                  at{" "}
+                                  {new Date(
+                                    `1970-01-01T${event.time}`
+                                  ).toLocaleTimeString("en-US", {
+                                    hour: "numeric",
+                                    minute: "2-digit",
+                                    hour12: true,
+                                  })}
+                                </>
+                              )}
+                            </div>
                           </div>
                           <div className="mt-2 text-sm text-gray-900">
                             <div className="font-medium">Location:</div>
@@ -393,7 +507,7 @@ const AdminEvents = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-4 whitespace-nowrap hidden sm:table-cell">
                           <div className="text-sm text-gray-900">
                             <span className="font-medium">Category:</span>{" "}
                             {event.category}
@@ -403,7 +517,7 @@ const AdminEvents = () => {
                             {event.type}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        {/* <td className="px-4 py-4 whitespace-nowrap hidden sm:table-cell">
                           <span
                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
                             ${
@@ -416,30 +530,28 @@ const AdminEvents = () => {
                           >
                             {event.status}
                           </span>
+                        </td> */}
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-900 hidden xl:table-cell">
+                          Comments: {event.comment_count || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            Comments: {event.comment_count}
-                          </div>
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden xl:table-cell">
+                          {new Date(event.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {event.createdAt}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-3">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                          <div className="flex justify-end space-x-2">
                             <button
-                              onClick={() => handleEdit(event.id)}
+                              onClick={() => handleEdit(event)}
                               className="text-blue-600 hover:text-blue-900 transition-colors"
                               title="Edit"
                             >
-                              <FaEdit className="h-5 w-5" />
+                              <FaEdit className="h-4 w-4 md:h-5 md:w-5" />
                             </button>
                             <button
-                              onClick={() => handleDelete(event.id)}
+                              onClick={() => handleDelete(event._id)}
                               className="text-red-600 hover:text-red-900 transition-colors"
                               title="Delete"
                             >
-                              <FaTrashAlt className="h-5 w-5" />
+                              <FaTrashAlt className="h-4 w-4 md:h-5 md:w-5" />
                             </button>
                           </div>
                         </td>
@@ -459,7 +571,7 @@ const AdminEvents = () => {
               </table>
             </div>
           </div>
-          <div className="bg-gray-50 px-6 py-3 flex items-center justify-between border-t border-gray-200">
+          <div className="bg-gray-50 px-4 py-3 flex items-center justify-between border-t border-gray-200">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={handlePrevPage}
@@ -547,6 +659,236 @@ const AdminEvents = () => {
             </div>
           </div>
         </div>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800">
+                  {isEditMode ? "Edit Event" : "Add New Event"}
+                </h2>
+                <button
+                  onClick={() => setIsModalOpen(false)}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  <FaTimes className="h-5 w-5 md:h-6 md:w-6" />
+                </button>
+              </div>
+              <div className="p-4 md:p-6">
+                <form
+                  onSubmit={handleSubmit}
+                  className="space-y-4 md:space-y-6"
+                >
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Title <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="title"
+                      value={formData.title}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter event title"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="date"
+                        name="date"
+                        value={
+                          formData.date
+                            ? new Date(formData.date)
+                                .toISOString()
+                                .split("T")[0]
+                            : ""
+                        }
+                        min={new Date().toISOString().split("T")[0]}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Time
+                      </label>
+                      <input
+                        type="time"
+                        name="time"
+                        value={formData.time || ""}
+                        onChange={handleChange}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Location <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      name="location"
+                      value={formData.location}
+                      onChange={handleChange}
+                      required
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter event location"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Description <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      name="description"
+                      value={formData.description}
+                      onChange={handleChange}
+                      required
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="Enter event description"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Category <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="category"
+                        value={formData.category}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {categories
+                          .filter((cat) => cat !== "All")
+                          .map((category) => (
+                            <option key={category} value={category}>
+                              {category}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Type <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        name="type"
+                        value={formData.type}
+                        onChange={handleChange}
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        {types
+                          .filter((t) => t !== "All")
+                          .map((type) => (
+                            <option key={type} value={type}>
+                              {type}
+                            </option>
+                          ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Event URL
+                    </label>
+                    <input
+                      type="url"
+                      name="url"
+                      value={formData.url}
+                      onChange={handleChange}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://example.com/event"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Event Image
+                    </label>
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          {isUploading ? (
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                          ) : (
+                            <>
+                              <FaImage className="w-8 h-8 mb-3 text-gray-400" />
+                              <p className="mb-2 text-sm text-gray-500 text-center px-2">
+                                <span className="font-semibold">
+                                  Click to upload
+                                </span>{" "}
+                                or drag and drop
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                PNG, JPG, JPEG (Max. 5MB)
+                              </p>
+                            </>
+                          )}
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleImageChange}
+                        />
+                      </label>
+                      {(imagePreview || formData.image) && (
+                        <div className="relative">
+                          <img
+                            src={imagePreview || formData.image}
+                            alt="Preview"
+                            className="h-32 w-32 object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setImagePreview(null);
+                              setFormData((prev) => ({ ...prev, image: "" }));
+                            }}
+                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full p-1 -mt-2 -mr-2"
+                          >
+                            <FaTimes className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsModalOpen(false)}
+                      className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+                    >
+                      {isEditMode ? "Update Event" : "Add Event"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

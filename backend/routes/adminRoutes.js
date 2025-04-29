@@ -20,6 +20,10 @@ const {
   deleteDiscussion,
   addDiscussion,
   listDiscussions,
+  listEvents,
+  updateEvent,
+  deleteEvent,
+  addEvent,
 } = require("../controllers/adminController");
 
 router.get("/", adminProfile);
@@ -47,5 +51,10 @@ router.post("/addDiscussion", addDiscussion);
 router.post("/updateDiscussion", updateDiscussion);
 router.delete("/deleteDiscussion", deleteDiscussion);
 router.get("/listDiscussions", listDiscussions);
+
+router.get("/listEvents", listEvents);
+router.post("/addEvent", addEvent);
+router.post("/updateEvent", updateEvent);
+router.delete("/deleteEvent", deleteEvent);
 
 module.exports = router;
