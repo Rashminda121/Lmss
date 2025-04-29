@@ -31,7 +31,7 @@ const discussionSchema = new mongoose.Schema(
       default: null,
     },
     comments: {
-      type: String,
+      type: Number,
       default: null,
     },
     role: {

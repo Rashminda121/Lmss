@@ -459,6 +459,125 @@ const listCourseCategories = async (req, res) => {
   }
 };
 
+const addDiscussion = async (req, res) => {
+  try {
+    const { title, description, email, category } = req.body;
+
+    if (!title || !description || !email) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if user exists
+    const existingUser = await User.findOne({ email });
+    if (!existingUser) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    // Create a new discussion
+    const newDiscussion = new Discussion({
+      uid: existingUser.uid,
+      uimage: existingUser.image,
+      name: existingUser.name,
+      role: existingUser.role,
+      title,
+      description,
+      category,
+      email,
+    });
+    await newDiscussion.save();
+
+    res.status(201).json({ message: "Discussion added successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error adding discussion", error: error.message });
+  }
+};
+
+const updateDiscussion = async (req, res) => {
+  try {
+    const { _id, title, description, category, email } = req.body;
+
+    if (!title || !description || !_id || !category || !email) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const updatedDiscussion = await Discussion.findByIdAndUpdate(
+      _id,
+      {
+        title,
+        description,
+        category,
+        email,
+      },
+      { new: true }
+    );
+
+    if (!updatedDiscussion) {
+      return res.status(404).json({ message: "Discussion not found" });
+    }
+
+    res.status(200).json({
+      message: "Discussion updated successfully",
+      discussion: updatedDiscussion,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error updating discussion",
+      error: error.message,
+    });
+  }
+};
+const deleteDiscussion = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedDiscussion = await Discussion.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Discussion deleted successfully",
+      discussion: deletedDiscussion,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting discussion",
+      error: error.message,
+    });
+  }
+};
+
+const listDiscussions = async (req, res) => {
+  try {
+    const discussions = await Discussion.find({});
+
+    if (!discussions || discussions.length === 0) {
+      return res.status(404).json({ message: "No discussions found." });
+    }
+
+    const updatedDiscussions = await Promise.all(
+      discussions.map(async (discussion) => {
+        const count = await DisComment.countDocuments({
+          disid: discussion._id,
+        });
+        discussion.comments = count;
+        await discussion.save();
+
+        return discussion;
+      })
+    );
+
+    res.status(200).json(updatedDiscussions);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting discussions", error: error.message });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
@@ -475,4 +594,8 @@ module.exports = {
   updateCourse,
   deleteCourse,
   updateCoursePublish,
+  updateDiscussion,
+  deleteDiscussion,
+  addDiscussion,
+  listDiscussions,
 };

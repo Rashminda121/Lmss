@@ -348,9 +348,9 @@ const AdminCourses = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Course
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
+                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
                       User
-                    </th>
+                    </th> */}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                       Description
                     </th>
@@ -400,9 +400,9 @@ const AdminCourses = () => {
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
+                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                           {course.user?.email || "Unknown"}
-                        </td>
+                        </td> */}
                         <td className="px-4 py-4 text-sm text-gray-500 hidden lg:table-cell">
                           <div className="line-clamp-2 max-w-xs">
                             {course.description}

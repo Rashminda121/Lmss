@@ -170,7 +170,19 @@ const listDiscussions = async (req, res) => {
       return res.status(404).json({ message: "No discussions found." });
     }
 
-    res.status(200).json(discussions);
+    const updatedDiscussions = await Promise.all(
+      discussions.map(async (discussion) => {
+        const count = await DisComment.countDocuments({
+          disid: discussion._id,
+        });
+        discussion.comments = count;
+        await discussion.save();
+
+        return discussion;
+      })
+    );
+
+    res.status(200).json(updatedDiscussions);
   } catch (error) {
     res
       .status(500)

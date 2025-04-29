@@ -253,6 +253,7 @@ const SubNavbar: React.FC = () => {
               {item.name}
             </a>
           ))}
+
           <button
             onClick={() => {
               handleProfile();
@@ -262,6 +263,20 @@ const SubNavbar: React.FC = () => {
           >
             Profile
           </button>
+          {userProfile && userProfile.role === "admin" && (
+            <Link key="admin-dashboard" href="/admin/dashboard" passHref>
+              <button
+                className={`p-2 transition-colors duration-300 font-semibold ${
+                  activeItem === "admin"
+                    ? "text-blue-700"
+                    : "text-black hover:text-blue-700"
+                }`}
+                onClick={() => handleItemClick({ name: "admin" })}
+              >
+                Admin
+              </button>
+            </Link>
+          )}
           <button
             onClick={() => setIsModalOpen(true)}
             className="bg-black text-white text-sm font-semibold p-2 px-6 rounded"
