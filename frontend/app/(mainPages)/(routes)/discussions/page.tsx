@@ -14,6 +14,7 @@ interface Discussion {
   name: string;
   title: string;
   description: string;
+  comments: string;
   category: string;
   createdAt: string;
 }
@@ -286,7 +287,7 @@ const Discussions = () => {
                         <span className="flex items-center gap-1.5">
                           <FaComments className="text-gray-400" />
                           <span className="text-gray-700 font-medium">
-                           {discussion.comments}
+                            {discussion.comments}
                           </span>
                         </span>
                       </div>
