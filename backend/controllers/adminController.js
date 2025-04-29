@@ -790,6 +790,80 @@ const listEvents = async (req, res) => {
   }
 };
 
+const deleteDisComment = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedComment = await DisComment.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting comment",
+      error: error.message,
+    });
+  }
+};
+
+const deleteEventComment = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({ message: "ID is required" });
+    }
+
+    const deletedComment = await EventComment.findByIdAndDelete(_id);
+
+    res.status(200).json({
+      message: "Comment deleted successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error deleting comment",
+      error: error.message,
+    });
+  }
+};
+
+const listDisComments = async (req, res) => {
+  try {
+    const comments = await DisComment.find({});
+
+    if (!comments || comments.length === 0) {
+      return res.status(404).json({ message: "No comments found." });
+    }
+
+    res.status(200).json(comments);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting comments", error: error.message });
+  }
+};
+
+const listEventComments = async (req, res) => {
+  try {
+    const comments = await EventComment.find({});
+
+    if (!comments || comments.length === 0) {
+      return res.status(404).json({ message: "No comments found." });
+    }
+
+    res.status(200).json(comments);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Error getting comments", error: error.message });
+  }
+};
+
 module.exports = {
   adminProfile,
   createUser,
@@ -814,4 +888,8 @@ module.exports = {
   updateEvent,
   deleteEvent,
   addEvent,
+  listDisComments,
+  listEventComments,
+  deleteDisComment,
+  deleteEventComment,
 };

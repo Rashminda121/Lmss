@@ -1,123 +1,43 @@
 "use client";
-import { FaEdit, FaTrashAlt, FaSearch } from "react-icons/fa";
-import { useState } from "react";
+import { FaTrashAlt, FaSearch } from "react-icons/fa";
+import { useEffect, useRef, useState } from "react";
+import Swal from "sweetalert2";
+import axios from "axios";
+import { useUser } from "@clerk/nextjs";
 
-type Comment = {
-  id: number;
-  userName: string;
-  userEmail: string;
-  userImage: string;
-  content: string;
+type DiscussionComment = {
+  _id: string;
+  disid: string;
+  uid: string;
+  uimage: string;
+  name: string;
+  description: string;
+  email: string;
   createdAt: string;
 };
 
+type EventComment = {
+  _id: string;
+  eid: string;
+  uid: string;
+  uimage: string;
+  name: string;
+  text: string;
+  email: string;
+  createdAt: string;
+};
+
+interface Event {
+  _id: string;
+  title: string;
+}
+
+interface Discussion {
+  _id: string;
+  title: string;
+}
+
 const AdminComments = () => {
-  // Separate datasets for different comment types
-  const discussionComments: Comment[] = [
-    {
-      id: 1,
-      userName: "John Doe",
-      userEmail: "john@example.com",
-      userImage: "https://randomuser.me/api/portraits/men/1.jpg",
-      content:
-        "This discussion topic is very interesting and relevant to our current needs.",
-      createdAt: "2024-04-15 10:30",
-    },
-    {
-      id: 2,
-      userName: "Jane Smith",
-      userEmail: "jane@example.com",
-      userImage: "https://randomuser.me/api/portraits/women/1.jpg",
-      content: "I completely agree with the points raised in this discussion.",
-      createdAt: "2024-04-14 14:45",
-    },
-    {
-      id: 5,
-      userName: "Michael Brown",
-      userEmail: "michael@example.com",
-      userImage: "https://randomuser.me/api/portraits/men/3.jpg",
-      content: "This discussion could benefit from more technical details.",
-      createdAt: "2024-04-08 11:10",
-    },
-    {
-      id: 6,
-      userName: "Emily Davis",
-      userEmail: "emily@example.com",
-      userImage: "https://randomuser.me/api/portraits/women/3.jpg",
-      content: "Has anyone tried implementing this solution in production?",
-      createdAt: "2024-04-07 09:20",
-    },
-    {
-      id: 7,
-      userName: "Robert Wilson",
-      userEmail: "robert@example.com",
-      userImage: "https://randomuser.me/api/portraits/men/4.jpg",
-      content:
-        "We've been using a similar approach for months with great results.",
-      createdAt: "2024-04-05 16:45",
-    },
-    {
-      id: 11,
-      userName: "Robert Wilson",
-      userEmail: "robert@example.com",
-      userImage: "https://randomuser.me/api/portraits/men/4.jpg",
-      content:
-        "We've been using a similar approach for months with great results.",
-      createdAt: "2024-04-05 16:45",
-    },
-  ];
-
-  const eventComments: Comment[] = [
-    {
-      id: 3,
-      userName: "Alex Johnson",
-      userEmail: "alex@example.com",
-      userImage: "https://randomuser.me/api/portraits/men/2.jpg",
-      content: "Looking forward to this event! The speakers seem amazing.",
-      createdAt: "2024-04-10 09:15",
-    },
-    {
-      id: 4,
-      userName: "Sarah Williams",
-      userEmail: "sarah@example.com",
-      userImage: "https://randomuser.me/api/portraits/women/2.jpg",
-      content: "Will there be recordings available after the event?",
-      createdAt: "2024-04-09 16:20",
-    },
-    {
-      id: 8,
-      userName: "Jessica Taylor",
-      userEmail: "jessica@example.com",
-      userImage: "https://randomuser.me/api/portraits/women/4.jpg",
-      content: "What time does the event start in Pacific Time?",
-      createdAt: "2024-04-04 12:30",
-    },
-    {
-      id: 9,
-      userName: "Daniel Anderson",
-      userEmail: "daniel@example.com",
-      userImage: "https://randomuser.me/api/portraits/men/5.jpg",
-      content: "Will there be networking opportunities after the main event?",
-      createdAt: "2024-04-03 08:15",
-    },
-    {
-      id: 10,
-      userName: "Olivia Martinez",
-      userEmail: "olivia@example.com",
-      userImage: "https://randomuser.me/api/portraits/women/5.jpg",
-      content: "Is there a dress code for this event?",
-      createdAt: "2024-04-02 14:50",
-    },
-    {
-      id: 12,
-      userName: "Olivia Martinez",
-      userEmail: "olivia@example.com",
-      userImage: "https://randomuser.me/api/portraits/women/5.jpg",
-      content: "Is there a dress code for this event?",
-      createdAt: "2024-04-02 14:50",
-    },
-  ];
-
   const [activeTab, setActiveTab] = useState<"discussion" | "event">(
     "discussion"
   );
@@ -125,18 +45,80 @@ const AdminComments = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const commentsPerPage = 5;
 
-  // Get current dataset based on active tab
+  const [discussionComments, setDiscussionComments] = useState<
+    DiscussionComment[]
+  >([]);
+  const [eventComments, setEventComments] = useState<EventComment[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [discussions, setDiscussions] = useState<Discussion[]>([]);
+
+  const hasFetchedData = useRef(false);
+
+  const getData = async () => {
+    try {
+      const [discussionResponse, eventResponse, disResponse, evResponse] =
+        await Promise.all([
+          axios.get("http://localhost:4000/api/admin/listDisComments"),
+          axios.get("http://localhost:4000/api/admin/listEventComments"),
+          axios.get("http://localhost:4000/api/admin/listDiscussions"),
+          axios.get("http://localhost:4000/api/admin/listEvents"),
+        ]);
+
+      setDiscussionComments(discussionResponse.data);
+      setEventComments(eventResponse.data);
+      setDiscussions(disResponse.data);
+      setEvents(evResponse.data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      Swal.fire({
+        toast: true,
+        position: "top",
+        icon: "error",
+        title: "Failed to fetch data",
+        showConfirmButton: false,
+        timer: 3000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (!hasFetchedData.current) {
+      getData();
+      hasFetchedData.current = true;
+    }
+  }, []);
+
+  const getParentTitle = (
+    comment: DiscussionComment | EventComment
+  ): string => {
+    if (activeTab === "discussion" && "disid" in comment) {
+      const discussion = discussions.find((d) => d._id === comment.disid);
+      return discussion?.title || "Unknown Discussion";
+    } else if (activeTab === "event" && "eid" in comment) {
+      const event = events.find((e) => e._id === comment.eid);
+      return event?.title || "Unknown Event";
+    }
+    return "Unknown";
+  };
+
   const currentDataset =
     activeTab === "discussion" ? discussionComments : eventComments;
 
-  // Filter comments by search term
   const filteredComments = currentDataset.filter((comment) => {
     const searchLower = searchTerm.toLowerCase();
-    return (
-      comment.userName.toLowerCase().includes(searchLower) ||
-      comment.userEmail.toLowerCase().includes(searchLower) ||
-      comment.content.toLowerCase().includes(searchLower)
-    );
+    const parentTitle = getParentTitle(comment).toLowerCase();
+
+    const nameMatch = comment.name.toLowerCase().includes(searchLower);
+    const emailMatch = comment.email.toLowerCase().includes(searchLower);
+    const titleMatch = parentTitle.includes(searchLower);
+    const contentMatch =
+      activeTab === "discussion"
+        ? (comment as DiscussionComment).description
+            .toLowerCase()
+            .includes(searchLower)
+        : (comment as EventComment).text.toLowerCase().includes(searchLower);
+
+    return nameMatch || emailMatch || titleMatch || contentMatch;
   });
 
   // Pagination logic
@@ -148,20 +130,52 @@ const AdminComments = () => {
   );
   const totalPages = Math.ceil(filteredComments.length / commentsPerPage);
 
-  const handleEdit = (commentId: number) => {
-    console.log("Edit comment:", commentId);
-    // Add your edit logic here
-  };
+  const handleDelete = async (commentId: string, isEventComment: boolean) => {
+    const result = await Swal.fire({
+      title: "Are you sure?",
+      text: "You won't be able to revert this!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, delete it!",
+    });
 
-  const handleDelete = (commentId: number) => {
-    console.log("Delete comment:", commentId);
-    // Add your delete logic here
+    if (result.isConfirmed) {
+      try {
+        const endpoint = isEventComment
+          ? "http://localhost:4000/api/admin/deleteEventComment"
+          : "http://localhost:4000/api/admin/deleteDisComment";
+
+        await axios.delete(endpoint, { data: { _id: commentId } });
+
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "success",
+          title: "Comment deleted successfully!",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+        getData();
+      } catch (error) {
+        console.error("Failed to delete comment:", error);
+        Swal.fire({
+          toast: true,
+          position: "top",
+          icon: "error",
+          title: "Failed to delete comment",
+          showConfirmButton: false,
+          timer: 3000,
+        });
+      }
+    }
   };
 
   const handleTabChange = (tab: "discussion" | "event") => {
     setActiveTab(tab);
-    setCurrentPage(1); // Reset to first page when changing tabs
-    setSearchTerm(""); // Optional: Clear search when changing tabs
+    setCurrentPage(1);
+    setSearchTerm("");
   };
 
   const handlePrevPage = () => {
@@ -196,7 +210,7 @@ const AdminComments = () => {
                 value={searchTerm}
                 onChange={(e) => {
                   setSearchTerm(e.target.value);
-                  setCurrentPage(1); // Reset to first page when searching
+                  setCurrentPage(1);
                 }}
               />
             </div>
@@ -235,34 +249,23 @@ const AdminComments = () => {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       User
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Email
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      {activeTab === "discussion" ? "Discussion" : "Event"}{" "}
+                      Title
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Comment
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Created At
                     </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
+                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -271,60 +274,85 @@ const AdminComments = () => {
                   {currentComments.length > 0 ? (
                     currentComments.map((comment) => (
                       <tr
-                        key={comment.id}
+                        key={comment._id}
                         className="hover:bg-gray-50 transition-colors"
                       >
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-3 min-w-[160px]">
                           <div className="flex items-center">
                             <div className="flex-shrink-0 h-10 w-10">
                               <img
                                 className="h-10 w-10 rounded-full"
-                                src={comment.userImage}
-                                alt={comment.userName}
+                                src={comment.uimage}
+                                alt={comment.name}
                               />
                             </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {comment.userName}
+                            <div className="ml-3 min-w-0">
+                              <div className="text-sm font-medium text-gray-900 truncate">
+                                {comment.name}
                               </div>
                             </div>
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {comment.userEmail}
+
+                        <td className="px-4 py-3 text-sm text-gray-500 min-w-[180px] max-w-[180px]">
+                          <div className="truncate">{comment.email}</div>
                         </td>
-                        <td className="px-6 py-4">
-                          <div className="text-sm text-gray-900 max-w-xs truncate">
-                            {comment.content}
+
+                        <td className="px-4 py-3 min-w-[150px] max-w-[150px] break-words whitespace-normal">
+                          <div className="text-sm font-medium text-gray-900 max-h-16 overflow-y-auto">
+                            {getParentTitle(comment)}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {comment.createdAt}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <div className="flex justify-end space-x-3">
-                            <button
-                              onClick={() => handleEdit(comment.id)}
-                              className="text-blue-600 hover:text-blue-900 transition-colors"
-                              title="Edit"
-                            >
-                              <FaEdit className="h-5 w-5" />
-                            </button>
-                            <button
-                              onClick={() => handleDelete(comment.id)}
-                              className="text-red-600 hover:text-red-900 transition-colors"
-                              title="Delete"
-                            >
-                              <FaTrashAlt className="h-5 w-5" />
-                            </button>
+
+                        <td className="px-4 py-3 min-w-[200px] w-[280px]">
+                          <div className="text-sm text-gray-900 h-20 overflow-y-auto p-2 rounded border bg-gray-50">
+                            {activeTab === "discussion"
+                              ? (comment as DiscussionComment).description
+                              : (comment as EventComment).text}
                           </div>
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                          <div className="flex flex-col">
+                            <span>
+                              {new Date(comment.createdAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  year: "numeric",
+                                  month: "short",
+                                  day: "numeric",
+                                }
+                              )}
+                            </span>
+                            <span>
+                              {new Date(comment.createdAt).toLocaleTimeString(
+                                undefined,
+                                {
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                }
+                              )}
+                            </span>
+                          </div>
+                        </td>
+
+                        <td className="px-4 py-3 whitespace-nowrap text-right">
+                          <button
+                            onClick={() =>
+                              handleDelete(comment._id, activeTab === "event")
+                            }
+                            className="text-red-600 hover:text-red-900 transition-colors"
+                            title="Delete"
+                          >
+                            <FaTrashAlt className="h-5 w-5" />
+                          </button>
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
                       <td
-                        colSpan={5}
+                        colSpan={6}
                         className="px-6 py-4 text-center text-gray-500"
                       >
                         {searchTerm
