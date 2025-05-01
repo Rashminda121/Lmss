@@ -142,7 +142,7 @@ const SubNavbar: React.FC = () => {
     <nav className="bg-gray-200 p-3 px-9 z-20">
       <div className="flex items-center justify-between">
         <div className="text-black font-extrabold text-lg flex flex-row space-x-4 items-center">
-          <img src="/owl.gif" className="w-10 h-10" alt="" />
+          <img src="/owl.png" className="w-8 h-8" alt="" />
           <a href="/mainPage">
             <span>Lumina</span>
           </a>

@@ -81,8 +81,8 @@ const Articles: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
           <div className="inline-flex items-center justify-center mb-4">
-            <FaBookOpen className="text-indigo-600 text-3xl mr-3" />
-            <h2 className="text-4xl font-bold text-gray-900 sm:text-5xl">
+            <FaBookOpen className="text-blue-600 text-3xl mr-3" />
+            <h2 className="text-3xl font-bold text-gray-900 sm:text-5xl">
               Featured Articles
             </h2>
           </div>

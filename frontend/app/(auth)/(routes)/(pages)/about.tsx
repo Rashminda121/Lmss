@@ -10,7 +10,7 @@ const About = () => {
 
       <div className="flex flex-col md:flex-row items-center gap-2">
         <div className="flex justify-center w-full md:w-1/2 ">
-          <img src="/img4.gif" className="w-[250px] h-auto  md:w-[400px] " />
+          <img src="/about.png" className="w-[250px] h-auto  md:w-[400px] " />
         </div>
         <div className="flex items-center justify-center md:w-1/2 mt-2 md:mt-0 text-justify text-xs md:text-base">
           <p>

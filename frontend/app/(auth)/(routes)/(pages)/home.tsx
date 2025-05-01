@@ -4,7 +4,7 @@ const Home = () => {
       className="flex items-center justify-center mt-10 md:mt-0 "
       style={{ height: "auto" }}
     >
-      <div className="flex flex-col md:flex-row justify-between items-center w-full p-10 md:p-20">
+      <div className="flex flex-col md:flex-row justify-between items-center w-full h-auto md:h-[700px] p-10 md:p-20">
         <div className="flex flex-col">
           <h1 className="text-4xl md:text-6xl font-extrabold pb-2 md:pb-4">
             Welcome to <span className="text-blue-800">Lumina</span>
@@ -46,9 +46,9 @@ const Home = () => {
             </a>
           </div>
         </div>
-        <div className="flex mt-5 md:mt-0 sm:mt-0">
+        <div className="flex mt-5 md:mt-0 sm:mt-0 ">
           <img
-            src="/img2.gif"
+            src="/home.png"
             alt="home icon"
             className="ml-0 md:ml-5 "
             style={{ width: "550px", height: "auto" }}
