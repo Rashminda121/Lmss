@@ -20,7 +20,7 @@ const MainPagesLayout = ({ children }: { children: React.ReactNode }) => {
         <SubNavbar />
       </div>
 
-      <main className="pt-[70px] h-full">{children}</main>
+      <main className="pt-[55px] h-full">{children}</main>
 
       <section id="contact">
         <ContactPage />

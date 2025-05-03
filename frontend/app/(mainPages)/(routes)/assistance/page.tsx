@@ -35,7 +35,8 @@ type AssistantRole =
   | "education"
   | "mental-support"
   | "coding"
-  | "creative";
+  | "creative"
+  | "career";
 
 const ROLE_PROMPTS: Record<AssistantRole, string> = {
   general:
@@ -57,6 +58,10 @@ const ROLE_PROMPTS: Record<AssistantRole, string> = {
   creative:
     "You are a creative writer. Help with storytelling, brainstorming, and artistic ideas. " +
     "Be imaginative and expressive. Respond in 1-2 lines to spark ideas quickly.",
+
+  career:
+    "You are a career coach. Offer clear, practical advice on resumes, interviews, and professional growth. " +
+    "Focus on actionable tips and confident communication. Be concise unless detailed guidance is requested.",
 };
 
 const ROLE_ICONS: Record<AssistantRole, JSX.Element> = {
@@ -65,6 +70,7 @@ const ROLE_ICONS: Record<AssistantRole, JSX.Element> = {
   "mental-support": <span className="text-lg">💬</span>,
   coding: <span className="text-lg">💻</span>,
   creative: <span className="text-lg">🎨</span>,
+  career: <span className="text-lg">💼</span>,
 };
 
 const UserAssistance = () => {
@@ -80,6 +86,28 @@ const UserAssistance = () => {
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // Check for mobile view on mount and resize
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkIfMobile();
+    window.addEventListener("resize", checkIfMobile);
+
+    return () => {
+      window.removeEventListener("resize", checkIfMobile);
+    };
+  }, []);
+
+  // Auto-close sidebar on mobile when a role is selected
+  useEffect(() => {
+    if (isMobile && isSidebarOpen) {
+      setIsSidebarOpen(false);
+    }
+  }, [selectedRole, isMobile]);
 
   // Toggle dark/light mode
   const toggleDarkMode = () => {
@@ -237,16 +265,16 @@ const UserAssistance = () => {
 
   return (
     <div
-      className={`min-h-screen transition-colors duration-300 ${
+      className={`min-h-screen pt-5 transition-colors duration-300 ${
         darkMode
           ? "bg-gradient-to-b from-gray-900 to-gray-800"
           : "bg-gradient-to-b from-gray-100 to-gray-200"
       }`}
     >
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-6">
+      <div className="container mx-auto px-4 py-4 md:py-8">
+        <header className="text-center mb-4 md:mb-6">
           <h1
-            className={`text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${
+            className={`text-2xl md:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r ${
               darkMode
                 ? "from-blue-400 to-blue-600"
                 : "from-blue-600 to-blue-800"
@@ -254,37 +282,41 @@ const UserAssistance = () => {
           >
             User Assistance
           </h1>
-          <p className={`${darkMode ? "text-gray-400" : "text-gray-600"} mt-2`}>
+          <p
+            className={`${
+              darkMode ? "text-gray-400" : "text-gray-600"
+            } mt-1 md:mt-2 text-sm md:text-base`}
+          >
             Seek wisdom from The Last Codebender
           </p>
         </header>
 
         {/* Menu Bar with Controls */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex gap-2">
+        <div className="flex justify-between items-center mb-2 md:mb-4">
+          <div className="flex gap-1 md:gap-2">
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className={`flex items-center gap-2 ${
+              className={`flex items-center gap-1 md:gap-2 ${
                 darkMode
                   ? "bg-gray-800 text-gray-50 hover:bg-gray-700 border border-gray-700"
                   : "bg-white hover:bg-gray-100 text-gray-900 border-gray-300 shadow-md"
-              }  px-4 py-2 rounded-lg transition-colors`}
+              } px-2 py-1 md:px-4 md:py-2 rounded-lg transition-colors text-xs md:text-base`}
             >
               {isSidebarOpen ? (
                 <>
-                  <FiX size={18} />
-                  <span>Hide Roles</span>
+                  <FiX size={16} />
+                  <span className="hidden sm:inline">Hide Roles</span>
                 </>
               ) : (
                 <>
-                  <FiMenu size={18} />
-                  <span>Show Roles</span>
+                  <FiMenu size={16} />
+                  <span className="hidden sm:inline">Show Roles</span>
                 </>
               )}
             </button>
             <button
               onClick={toggleDarkMode}
-              className={`px-3 py-2 rounded-lg ${
+              className={`p-1 md:p-2 rounded-lg ${
                 darkMode
                   ? "bg-gray-800 hover:bg-gray-700 border border-gray-700"
                   : "bg-white hover:bg-gray-100 border border-gray-300 shadow-md"
@@ -292,13 +324,13 @@ const UserAssistance = () => {
               title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
             >
               {darkMode ? (
-                <FiSun className="text-yellow-300" />
+                <FiSun className="text-yellow-300 text-sm md:text-base" />
               ) : (
-                <FiMoon className="text-gray-700" />
+                <FiMoon className="text-gray-700 text-sm md:text-base" />
               )}
             </button>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-1 md:gap-2">
             <button
               onClick={copyChat}
               disabled={messages.length === 0}
@@ -306,11 +338,13 @@ const UserAssistance = () => {
                 darkMode
                   ? "bg-gray-800 hover:bg-gray-700 text-gray-50 border border-gray-700"
                   : "bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 shadow-md"
-              }  px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50`}
+              } px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm transition-colors disabled:opacity-50`}
               title="Copy chat"
             >
-              <FiCopy size={16} />
-              {showCopied ? "Copied!" : "Copy"}
+              <FiCopy size={14} />
+              <span className="hidden sm:inline">
+                {showCopied ? "Copied!" : "Copy"}
+              </span>
             </button>
             <button
               onClick={() => setShowDialog(true)}
@@ -319,71 +353,77 @@ const UserAssistance = () => {
                 darkMode
                   ? "bg-gray-800 hover:bg-gray-700 border border-gray-700"
                   : "bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 shadow-md"
-              }  px-3 py-2 rounded-lg text-sm transition-colors disabled:opacity-50`}
+              } px-2 py-1 md:px-3 md:py-2 rounded-lg text-xs md:text-sm transition-colors disabled:opacity-50`}
               title="Clear chat"
             >
-              <FiTrash2 size={16} />
-              Clear
+              <FiTrash2 size={14} />
+              <span className="hidden sm:inline">Clear</span>
             </button>
           </div>
         </div>
 
         <div
-          className={`flex h-[60vh] ${
+          className={`flex h-[calc(100vh-220px)] md:h-[60vh] ${
             darkMode ? "bg-black" : "bg-white"
           } rounded-xl shadow-xl overflow-hidden border ${
             darkMode ? "border-gray-800" : "border-gray-200"
           } relative`}
         >
           {/* Sidebar with role selection */}
-          <div
-            className={`w-64 ${
-              darkMode
-                ? "bg-gray-900 border-gray-800"
-                : "bg-gray-50 border-gray-200"
-            } border-r transition-all duration-300 ease-in-out ${
-              isSidebarOpen ? "translate-x-0" : "-translate-x-full absolute"
-            } h-full`}
-          >
-            <div className="p-4">
-              <h3
-                className={`${
-                  darkMode ? "text-white" : "text-gray-900"
-                } font-medium mb-4`}
-              >
-                Select Assistant Role
-              </h3>
-              <div className="space-y-2">
-                {Object.keys(ROLE_PROMPTS).map((role) => (
-                  <button
-                    key={role}
-                    onClick={() => {
-                      setSelectedRole(role as AssistantRole);
-                    }}
-                    className={`w-full flex items-center gap-3 text-left px-4 py-3 rounded-lg text-sm ${
-                      selectedRole === role
-                        ? `${
-                            darkMode ? "bg-blue-600" : "bg-blue-500"
-                          } text-white`
-                        : `${
-                            darkMode
-                              ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
-                              : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
-                          }`
-                    }`}
-                  >
-                    <span className="text-lg">
-                      {ROLE_ICONS[role as AssistantRole]}
-                    </span>
-                    <span className="flex-1">{formatRoleName(role)}</span>
-                    {selectedRole === role && (
-                      <FiChevronRight className="ml-2" />
-                    )}
-                  </button>
-                ))}
+          {isSidebarOpen && (
+            <div
+              className={`w-64 ${
+                darkMode
+                  ? "bg-gray-900 border-gray-800"
+                  : "bg-gray-50 border-gray-200"
+              } border-r transition-all duration-300 ease-in-out ${
+                isSidebarOpen
+                  ? "translate-x-0"
+                  : isMobile
+                  ? "-translate-x-full absolute"
+                  : "-translate-x-0"
+              } h-full ${isMobile ? "z-10 w-52" : ""}`}
+            >
+              <div className="p-3 md:p-4">
+                <h3
+                  className={`${
+                    darkMode ? "text-white" : "text-gray-900"
+                  } font-medium mb-3 md:mb-4 text-sm md:text-base`}
+                >
+                  Select Assistant Role
+                </h3>
+                <div className="space-y-1 md:space-y-2">
+                  {Object.keys(ROLE_PROMPTS).map((role) => (
+                    <button
+                      key={role}
+                      onClick={() => {
+                        setSelectedRole(role as AssistantRole);
+                      }}
+                      className={`w-full flex items-center gap-2 md:gap-3 text-left px-3 py-2 md:px-4 md:py-3 rounded-lg text-xs md:text-sm ${
+                        selectedRole === role
+                          ? `${
+                              darkMode ? "bg-blue-600" : "bg-blue-500"
+                            } text-white`
+                          : `${
+                              darkMode
+                                ? "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                                : "bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-200"
+                            }`
+                      }`}
+                    >
+                      <span className="text-sm md:text-lg">
+                        {ROLE_ICONS[role as AssistantRole]}
+                      </span>
+                      <span className="flex-1">{formatRoleName(role)}</span>
+                      {selectedRole === role && (
+                        <FiChevronRight className="ml-1 md:ml-2" />
+                      )}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {/* Main chat area */}
           <div className="flex-1 flex flex-col">
@@ -391,7 +431,7 @@ const UserAssistance = () => {
               <div
                 className={`${
                   darkMode ? "bg-red-900" : "bg-red-100 text-red-900"
-                } p-2 text-center text-sm`}
+                } p-2 text-center text-xs md:text-sm`}
               >
                 {error}
               </div>
@@ -399,7 +439,7 @@ const UserAssistance = () => {
 
             <div
               ref={chatContainerRef}
-              className={`flex-1 overflow-y-auto p-4 space-y-6 ${
+              className={`flex-1 overflow-y-auto p-2 md:p-4 space-y-4 md:space-y-6 ${
                 darkMode ? "bg-gray-900" : "bg-gray-50"
               }`}
             >
@@ -411,11 +451,13 @@ const UserAssistance = () => {
                 >
                   <div className="text-center">
                     <RiRobot2Line
-                      className={`mx-auto text-4xl mb-3 ${
+                      className={`mx-auto text-3xl md:text-4xl mb-2 md:mb-3 ${
                         darkMode ? "text-blue-500" : "text-blue-600"
                       }`}
                     />
-                    <p>Ask me anything as your {selectedRole} assistant...</p>
+                    <p className="text-sm md:text-base">
+                      Ask me anything as your {selectedRole} assistant...
+                    </p>
                   </div>
                 </div>
               ) : (
@@ -427,25 +469,29 @@ const UserAssistance = () => {
                     }`}
                   >
                     <div
-                      className={`flex max-w-3xl ${
+                      className={`flex max-w-full md:max-w-3xl ${
                         m.role === "user" ? "flex-row-reverse" : ""
                       }`}
                     >
                       <div
-                        className={`flex-shrink-0 h-10 w-10 rounded-full flex items-center justify-center ${
+                        className={`flex-shrink-0 h-8 w-8 md:h-10 md:w-10 rounded-full flex items-center justify-center ${
                           m.role === "user"
-                            ? `${darkMode ? "bg-gray-700" : "bg-gray-400"} ml-4`
-                            : `${darkMode ? "bg-blue-600" : "bg-blue-500"} mr-4`
+                            ? `${
+                                darkMode ? "bg-gray-700" : "bg-gray-400"
+                              } ml-2 md:ml-4`
+                            : `${
+                                darkMode ? "bg-blue-600" : "bg-blue-500"
+                              } mr-2 md:mr-4`
                         }`}
                       >
                         {m.role === "user" ? (
-                          <FiUser className="text-white text-lg" />
+                          <FiUser className="text-white text-sm md:text-lg" />
                         ) : (
-                          <RiRobot2Line className="text-white text-lg" />
+                          <RiRobot2Line className="text-white text-sm md:text-lg" />
                         )}
                       </div>
                       <div
-                        className={`relative px-4 py-3 rounded-lg ${
+                        className={`relative px-3 py-2 md:px-4 md:py-3 rounded-lg ${
                           m.role === "user"
                             ? `${
                                 darkMode ? "bg-gray-800" : "bg-gray-200"
@@ -457,25 +503,25 @@ const UserAssistance = () => {
                       >
                         <button
                           onClick={() => copyMessage(m.id)}
-                          className={`absolute top-1 right-1 p-1 ${
+                          className={`absolute top-1 right-1 p-0.5 md:p-1 ${
                             darkMode
                               ? "text-gray-400 hover:text-white"
                               : "text-gray-500 hover:text-gray-900"
                           } transition-colors`}
                           title="Copy message"
                         >
-                          <FiCopy size={14} />
+                          <FiCopy size={12} className="md:size-[14px]" />
                         </button>
                         <p
                           className={`whitespace-pre-wrap ${
                             darkMode ? "text-gray-100" : "text-gray-800"
-                          } pr-6 text-sm`}
+                          } pr-5 md:pr-6 text-xs md:text-sm`}
                         >
                           {m.content}
                         </p>
                         {copiedMessageId === m.id && (
                           <div
-                            className={`absolute bottom-1 right-1 text-xs ${
+                            className={`absolute bottom-0.5 right-1 text-[10px] md:text-xs ${
                               darkMode ? "text-gray-400" : "text-gray-500"
                             }`}
                           >
@@ -496,9 +542,9 @@ const UserAssistance = () => {
                 darkMode
                   ? "border-gray-800 bg-gray-900"
                   : "border-gray-200 bg-gray-50"
-              } p-4`}
+              } p-2 md:p-4`}
             >
-              <div className="flex space-x-2">
+              <div className="flex space-x-1 md:space-x-2">
                 <input
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
@@ -509,9 +555,9 @@ const UserAssistance = () => {
                     darkMode
                       ? "bg-gray-800 text-white border-gray-700"
                       : "bg-white text-gray-900 border-gray-300"
-                  } rounded-lg px-4 py-3 focus:outline-none focus:ring-2 ${
+                  } rounded-lg px-3 py-2 md:px-4 md:py-3 focus:outline-none focus:ring-2 ${
                     darkMode ? "focus:ring-blue-600" : "focus:ring-blue-500"
-                  } border text-sm`}
+                  } border text-xs md:text-sm`}
                   disabled={isLoading}
                 />
                 <button
@@ -523,12 +569,12 @@ const UserAssistance = () => {
                       : "bg-blue-500 hover:bg-blue-600"
                   } disabled:${
                     darkMode ? "bg-gray-700" : "bg-gray-300"
-                  } text-white rounded-lg px-4 py-3 transition-colors flex items-center justify-center w-12`}
+                  } text-white rounded-lg px-3 py-2 md:px-4 md:py-3 transition-colors flex items-center justify-center w-10 md:w-12`}
                 >
                   {isLoading ? (
-                    <span className="animate-spin">↻</span>
+                    <span className="animate-spin text-sm md:text-base">↻</span>
                   ) : (
-                    <FiSend className="text-xl" />
+                    <FiSend className="text-lg md:text-xl" />
                   )}
                 </button>
               </div>

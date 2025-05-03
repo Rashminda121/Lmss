@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
 
 const openai = new OpenAI({
-  apiKey: process.env.DEEPSEEK_API_KEY,
+  apiKey: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY,
   baseURL: "https://api.deepseek.com/v1",
 });
 
@@ -26,6 +26,10 @@ const ROLE_PROMPTS: Record<string, string> = {
   creative:
     "You are a creative writer. Help with storytelling, brainstorming, and artistic ideas. " +
     "Be imaginative and expressive. Respond in 1-2 lines to quickly inspire ideas.",
+
+  career:
+    "You are a career coach. Offer clear, practical advice on resumes, interviews, and professional growth. " +
+    "Focus on actionable tips and confident communication. Be concise unless detailed guidance is requested.",
 };
 
 export async function POST(req: NextRequest) {

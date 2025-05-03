@@ -58,7 +58,7 @@ const ClearChatDialog = ({
             } transition-colors flex-1 text-sm font-medium flex items-center justify-center gap-2`}
             aria-label="Cancel and keep chat"
           >
-            <FiX size={16} />
+            {/* <FiX size={16} /> */}
             <span>Cancel</span>
           </button>
           <button
@@ -69,7 +69,7 @@ const ClearChatDialog = ({
             className="px-4 py-2.5 rounded-lg bg-red-600 hover:bg-red-700 text-white transition-colors flex-1 text-sm font-medium flex items-center justify-center gap-2"
             aria-label="Confirm and clear chat"
           >
-            <FiTrash2 size={16} />
+            {/* <FiTrash2 size={16} /> */}
             <span>Clear Chat</span>
           </button>
         </div>

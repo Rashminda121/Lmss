@@ -24,7 +24,8 @@ type AssistantRole =
   | "education"
   | "mental-support"
   | "coding"
-  | "creative";
+  | "creative"
+  | "career";
 
 const ROLE_PROMPTS: Record<AssistantRole, string> = {
   general:
@@ -46,6 +47,10 @@ const ROLE_PROMPTS: Record<AssistantRole, string> = {
   creative:
     "You are a creative writer. Help with storytelling, brainstorming, and artistic ideas. " +
     "Be imaginative and expressive. Respond in 1-2 lines to spark ideas quickly.",
+
+  career:
+    "You are a career coach. Offer clear, practical advice on resumes, interviews, and professional growth. " +
+    "Focus on actionable tips and confident communication. Be concise unless detailed guidance is requested.",
 };
 
 export default function Chat() {

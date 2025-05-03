@@ -13,15 +13,12 @@ export async function createDeepSeekStream(messages: DeepSeekMessage[]) {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
-          // Add this if DeepSeek starts requiring API keys:
-           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY}`
+          Authorization: `Bearer ${process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY}`,
         },
         body: JSON.stringify({
           model: "deepseek-chat",
           messages,
           stream: true,
-          temperature: 0.7,
-          max_tokens: 1000,
         }),
       }
     );
