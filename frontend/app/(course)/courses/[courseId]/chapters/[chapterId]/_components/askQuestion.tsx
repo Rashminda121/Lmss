@@ -559,7 +559,7 @@ export const AskQuestion = ({
                 </div>
 
                 {/* Question actions dropdown */}
-                {q.userId === userId && (
+                {(userRole === "admin" || q.userId === userId) && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
@@ -653,7 +653,7 @@ export const AskQuestion = ({
                           </div>
 
                           {/* Answer actions dropdown */}
-                          {a.userId === userId && (
+                          {(userRole === "admin" || a.userId === userId) && (
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button
@@ -729,32 +729,31 @@ export const AskQuestion = ({
               )}
 
               {/* Answer Form (only for lecturers and admins) */}
-              {userRole === "lecturer" ||
-                (userRole === "admin" && (
-                  <div className="ml-0 sm:ml-10 mt-3">
-                    <Textarea
-                      value={answerText[q._id] || ""}
-                      onChange={(e) =>
-                        setAnswerText((prev) => ({
-                          ...prev,
-                          [q._id]: e.target.value,
-                        }))
-                      }
-                      placeholder="Write your answer here..."
-                      className="min-h-[80px]"
-                    />
-                    <div className="flex justify-end mt-2">
-                      <Button
-                        onClick={() => handleAnswerSubmit(q._id)}
-                        disabled={isSubmitting || !answerText[q._id]?.trim()}
-                        size="sm"
-                        className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
-                      >
-                        {isSubmitting ? "Posting..." : "Post Answer"}
-                      </Button>
-                    </div>
+              {(userRole === "admin" || userRole === "lecturer") && (
+                <div className="ml-0 sm:ml-10 mt-3">
+                  <Textarea
+                    value={answerText[q._id] || ""}
+                    onChange={(e) =>
+                      setAnswerText((prev) => ({
+                        ...prev,
+                        [q._id]: e.target.value,
+                      }))
+                    }
+                    placeholder="Write your answer here..."
+                    className="min-h-[80px]"
+                  />
+                  <div className="flex justify-end mt-2">
+                    <Button
+                      onClick={() => handleAnswerSubmit(q._id)}
+                      disabled={isSubmitting || !answerText[q._id]?.trim()}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-xs sm:text-sm"
+                    >
+                      {isSubmitting ? "Posting..." : "Post Answer"}
+                    </Button>
                   </div>
-                ))}
+                </div>
+              )}
             </div>
           ))
         )}

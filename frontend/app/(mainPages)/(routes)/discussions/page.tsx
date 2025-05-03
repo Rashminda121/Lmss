@@ -165,7 +165,7 @@ const Discussions = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
+    <div className="min-h-screen pt-5 bg-gradient-to-br from-gray-50 to-gray-100 flex flex-col">
       {/* Fixed Header Section */}
       <div className="bg-white shadow-sm z-10">
         <div className="max-w-4xl mx-auto py-4 px-4 sm:px-6 lg:px-8">

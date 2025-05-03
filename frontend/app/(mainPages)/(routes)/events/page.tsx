@@ -317,9 +317,9 @@ const Events = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen pt-10 bg-gray-50 py-10 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-gray-800 mb-10">
+        <h1 className="text-2xl md:text-4xl font-bold text-center text-gray-800 mb-10">
           Upcoming Events
         </h1>
 
@@ -383,7 +383,7 @@ const Events = () => {
           {/* Filters Sidebar */}
           <div className="lg:w-1/4 space-y-6">
             <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 transition-all hover:shadow-md">
-              <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <h2 className="text-lg md:text-xl font-semibold text-gray-800 mb-4 flex items-center">
                 <svg
                   className="w-5 h-5 mr-2 text-blue-500"
                   fill="none"
@@ -553,7 +553,7 @@ const Events = () => {
           {/* Event Cards */}
           <div className="lg:w-3/4">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold text-gray-800">
+              <h2 className="text-xl md:text-2xl font-semibold text-gray-800">
                 {filteredEvents.length} Events Found
               </h2>
             </div>

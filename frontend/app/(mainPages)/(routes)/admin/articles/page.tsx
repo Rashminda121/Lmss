@@ -331,7 +331,7 @@ const AdminArticles = () => {
   const showCategoryColumn = windowWidth > 768;
 
   return (
-    <div className="p-4 md:p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 mt-5 md:p-6 bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">

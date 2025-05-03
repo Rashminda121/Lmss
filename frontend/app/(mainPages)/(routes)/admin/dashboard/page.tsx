@@ -116,8 +116,10 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <h1 className="text-3xl font-bold text-gray-800 mb-8">Admin Dashboard</h1>
+    <div className="min-h-screen pt-10 bg-gray-50 p-6">
+      <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-8">
+        Admin Dashboard
+      </h1>
 
       {/* Cards Container */}
       <div className="flex flex-wrap justify-center gap-8">
