@@ -8,6 +8,8 @@ import { Separator } from "@/components/ui/separator";
 import { Preview } from "@/components/preview";
 import { File } from "lucide-react";
 import { CourseProgressButton } from "./_components/course-progress-button";
+import { AskQuestion } from "./_components/askQuestion";
+import { getChapterDetails } from "@/actions/get-chapter-details";
 
 const ChapterIdPage = async ({
   params,
@@ -33,6 +35,12 @@ const ChapterIdPage = async ({
     purchase,
     enrolled,
   } = await getChapter({
+    userId,
+    chapterId: params.chapterId,
+    courseId: params.courseId,
+  });
+
+  const { chapterDetails, courseDetails } = await getChapterDetails({
     userId,
     chapterId: params.chapterId,
     courseId: params.courseId,
@@ -70,7 +78,7 @@ const ChapterIdPage = async ({
             playbackId={muxData?.playbackId!}
             isLocked={isLocked}
             completeOnEnd={completeOnEnd}
-            videoUrl={videoUrl} //added
+            videoUrl={videoUrl}
           />
         </div>
         <div>
@@ -91,7 +99,7 @@ const ChapterIdPage = async ({
             )}
           </div>
           <Separator />
-          <div>
+          <div className="p-5 overflow-y-auto">
             <Preview value={chapter.description!} />
           </div>
           {!!attachements.length && (
@@ -115,6 +123,16 @@ const ChapterIdPage = async ({
               </div>
             </>
           )}
+
+          <div>
+            <AskQuestion
+              chapterId={params.chapterId}
+              courseId={params.courseId}
+              userId={userId}
+              courseDetails={courseDetails || null}
+              chapterDetails={chapterDetails || null}
+            />
+          </div>
         </div>
       </div>
     </div>

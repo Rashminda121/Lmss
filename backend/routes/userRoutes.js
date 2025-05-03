@@ -23,6 +23,13 @@ const {
   editEventComment,
   deleteDisComment,
   deleteEventComment,
+  addCourseQuestion,
+  updateCourseQuestion,
+  deleteCourseQuestion,
+  viewCourseQuestions,
+  addAnswerToCourseQuestion,
+  updateCourseQuestionAnswer,
+  deleteCourseQuestionAnswer,
 } = require("../controllers/userController");
 
 router.get("/userProfile", userProfile);
@@ -52,5 +59,14 @@ router.post("/addEventComment", addEventComment);
 router.put("/editEventComment", editEventComment);
 router.post("/viewEventComments", viewEventComments);
 router.delete("/deleteEventComment", deleteEventComment);
+
+router.post("/addCourseQuestion", addCourseQuestion);
+router.post("/viewCourseQuestions", viewCourseQuestions);
+router.put("/updateCourseQuestion", updateCourseQuestion);
+router.delete("/deleteCourseQuestion", deleteCourseQuestion);
+
+router.post("/addAnswerToCourseQuestion", addAnswerToCourseQuestion);
+router.put("/updateCourseQuestionAnswer", updateCourseQuestionAnswer);
+router.delete("/deleteCourseQuestionAnswer", deleteCourseQuestionAnswer);
 
 module.exports = router;

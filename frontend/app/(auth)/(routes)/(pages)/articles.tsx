@@ -31,14 +31,14 @@ const Articles: React.FC = () => {
       setData(response.data);
     } catch (error) {
       console.error("Error fetching articles:", error);
-      Swal.fire({
-        toast: true,
-        position: "top",
-        icon: "error",
-        title: "Failed to fetch articles",
-        showConfirmButton: false,
-        timer: 3000,
-      });
+      // Swal.fire({
+      //   toast: true,
+      //   position: "top",
+      //   icon: "error",
+      //   title: "Failed to fetch articles",
+      //   showConfirmButton: false,
+      //   timer: 3000,
+      // });
     }
   };
 
@@ -101,56 +101,64 @@ const Articles: React.FC = () => {
                 }%)`,
               }}
             >
-              {data.map((article) => (
-                <div
-                  key={article._id}
-                  className="flex-shrink-0 px-4"
-                  style={{ width: `${100 / itemsToShow}%` }}
-                >
-                  <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col border border-gray-100 hover:shadow-xl transition-all duration-300">
-                    {article.image && (
-                      <div className="h-56 overflow-hidden relative">
-                        <img
-                          src={article.image}
-                          alt={article.title}
-                          className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                        />
-                        <div className="absolute top-4 left-4">
-                          <span className="inline-block bg-white/90 backdrop-blur-sm text-indigo-600 text-xs px-3 py-1 rounded-full font-semibold shadow-sm">
-                            {article.category}
+              {Array.isArray(data) && data.length > 0 ? (
+                data.map((article) => (
+                  <div
+                    key={article._id}
+                    className="flex-shrink-0 px-4"
+                    style={{ width: `${100 / itemsToShow}%` }}
+                  >
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col border border-gray-100 hover:shadow-xl transition-all duration-300">
+                      {article.image && (
+                        <div className="h-56 overflow-hidden relative">
+                          <img
+                            src={article.image}
+                            alt={article.title}
+                            className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                          />
+                          <div className="absolute top-4 left-4">
+                            <span className="inline-block bg-white/90 backdrop-blur-sm text-indigo-600 text-xs px-3 py-1 rounded-full font-semibold shadow-sm">
+                              {article.category}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      <div className="p-6 flex-1 flex flex-col">
+                        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+                          <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex-1 min-w-0">
+                            <span className="line-clamp-2">
+                              {article.title}
+                            </span>
+                          </h3>
+                          {article.url && (
+                            <a
+                              href={article.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-gray-400 hover:text-indigo-600 transition-colors flex-shrink-0 mt-1 sm:mt-0"
+                              title="View full article"
+                            >
+                              <FaLink className="text-xl" />
+                            </a>
+                          )}
+                        </div>
+                        <p className="text-gray-600 mb-4 flex-1 max-h-24 overflow-y-auto no-scrollbar p-1 text-sm sm:text-base">
+                          {article.description}
+                        </p>
+                        <div className="flex justify-end">
+                          <span className="text-sm font-medium text-gray-500 italic">
+                            - {article.author}
                           </span>
                         </div>
                       </div>
-                    )}
-                    <div className="p-6 flex-1 flex flex-col">
-                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
-                        <h3 className="text-xl sm:text-2xl font-bold text-gray-900 flex-1 min-w-0">
-                          <span className="line-clamp-2">{article.title}</span>
-                        </h3>
-                        {article.url && (
-                          <a
-                            href={article.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-indigo-600 transition-colors flex-shrink-0 mt-1 sm:mt-0"
-                            title="View full article"
-                          >
-                            <FaLink className="text-xl" />
-                          </a>
-                        )}
-                      </div>
-                      <p className="text-gray-600 mb-4 flex-1 max-h-24 overflow-y-auto no-scrollbar p-1 text-sm sm:text-base">
-                        {article.description}
-                      </p>
-                      <div className="flex justify-end">
-                        <span className="text-sm font-medium text-gray-500 italic">
-                          - {article.author}
-                        </span>
-                      </div>
                     </div>
                   </div>
+                ))
+              ) : (
+                <div className="flex items-center justify-center w-full h-full min-h-[16rem] text-gray-500 text-center">
+                  No articles available.
                 </div>
-              ))}
+              )}
             </div>
           </div>
 

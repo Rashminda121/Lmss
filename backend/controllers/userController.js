@@ -4,6 +4,7 @@ const Event = require("../models/eventModel");
 const DisComment = require("../models/discussionCommentsModel");
 const EventComment = require("../models/eventCommentsModel");
 const jwt = require("jsonwebtoken");
+const CourseQuestion = require("../models/courseQuestionsModel");
 
 const userProfile = async (req, res) => {
   try {
@@ -634,6 +635,304 @@ const viewEventComments = async (req, res) => {
   }
 };
 
+const addCourseQuestion = async (req, res) => {
+  try {
+    const { userId, courseId, chapterId, text, uname } = req.body;
+
+    if (!userId || !text || !courseId || !chapterId) {
+      return res.status(400).json({
+        success: false,
+        message: "UserId, text, courseId, and chapterId are required fields",
+      });
+    }
+
+    const newQuestion = new CourseQuestion({
+      userId,
+      courseId,
+      chapterId,
+      uname: uname || "Anonymous",
+      text,
+      answers: [],
+    });
+
+    await newQuestion.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Question added successfully",
+      question: newQuestion,
+    });
+  } catch (error) {
+    console.error("Error adding question:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error adding question",
+      error: error.message,
+    });
+  }
+};
+
+const updateCourseQuestion = async (req, res) => {
+  try {
+    const { _id, text } = req.body;
+
+    if (!_id || !text) {
+      return res.status(400).json({
+        success: false,
+        message: "Question ID and text are required",
+      });
+    }
+
+    const updatedQuestion = await CourseQuestion.findByIdAndUpdate(
+      _id,
+      { text },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: "Question not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Question updated successfully",
+      question: updatedQuestion,
+    });
+  } catch (error) {
+    console.error("Error updating question:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating question",
+      error: error.message,
+    });
+  }
+};
+
+const deleteCourseQuestion = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({
+        success: false,
+        message: "Question ID is required",
+      });
+    }
+
+    const deletedQuestion = await CourseQuestion.findByIdAndDelete(_id);
+
+    if (!deletedQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: "Question not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Question deleted successfully",
+      question: deletedQuestion,
+    });
+  } catch (error) {
+    console.error("Error deleting question:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting question",
+      error: error.message,
+    });
+  }
+};
+
+const viewCourseQuestions = async (req, res) => {
+  try {
+    const { courseId, chapterId } = req.body;
+
+    if (!courseId) {
+      return res.status(400).json({
+        success: false,
+        message: "Course ID is required",
+      });
+    }
+
+    // Build query based on provided parameters
+    const query = { courseId };
+    if (chapterId) {
+      query.chapterId = chapterId;
+    }
+
+    const questions = await CourseQuestion.find(query)
+      .sort({ createdAt: -1 })
+      .populate("answers");
+
+    if (!questions || questions.length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No questions found",
+        questions: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Questions retrieved successfully",
+      questions,
+    });
+  } catch (error) {
+    console.error("Error getting questions:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error getting questions",
+      error: error.message,
+    });
+  }
+};
+
+const addAnswerToCourseQuestion = async (req, res) => {
+  try {
+    const { questionId, userId, text, uname } = req.body;
+
+    // Validate required fields
+    if (!questionId || !userId || !text) {
+      return res.status(400).json({
+        success: false,
+        message: "questionId, userId, and text are required fields",
+      });
+    }
+
+    // Create new answer object
+    const newAnswer = {
+      userId,
+      uname: uname || "Anonymous",
+      text,
+      createdAt: new Date(),
+    };
+
+    // Find the question and add the answer
+    const updatedQuestion = await CourseQuestion.findByIdAndUpdate(
+      questionId,
+      { $push: { answers: newAnswer } },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: "Question not found",
+      });
+    }
+
+    res.status(201).json({
+      success: true,
+      message: "Answer added successfully",
+      question: updatedQuestion,
+    });
+  } catch (error) {
+    console.error("Error adding answer:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error adding answer",
+      error: error.message,
+    });
+  }
+};
+
+const updateCourseQuestionAnswer = async (req, res) => {
+  try {
+    const { questionId, answerId, text } = req.body;
+
+    // Validate required fields
+    if (!questionId || !answerId || !text) {
+      return res.status(400).json({
+        success: false,
+        message: "questionId, answerId, and text are required fields",
+      });
+    }
+
+    // Find the question and update the specific answer
+    const updatedQuestion = await CourseQuestion.findOneAndUpdate(
+      {
+        _id: questionId,
+        "answers._id": answerId,
+      },
+      {
+        $set: { "answers.$.text": text },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: "Question or answer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Answer updated successfully",
+      question: updatedQuestion,
+    });
+  } catch (error) {
+    console.error("Error updating answer:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error updating answer",
+      error: error.message,
+    });
+  }
+};
+
+const deleteCourseQuestionAnswer = async (req, res) => {
+  try {
+    const { questionId, answerId } = req.body;
+
+    // Validate required fields
+    if (!questionId || !answerId) {
+      return res.status(400).json({
+        success: false,
+        message: "questionId and answerId are required fields",
+      });
+    }
+
+    // Find the question and pull (remove) the specific answer
+    const updatedQuestion = await CourseQuestion.findByIdAndUpdate(
+      { _id: questionId },
+      {
+        $pull: { answers: { _id: answerId } },
+      },
+      {
+        new: true,
+      }
+    );
+
+    if (!updatedQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: "Question not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Answer deleted successfully",
+      question: updatedQuestion,
+    });
+  } catch (error) {
+    console.error("Error deleting answer:", error);
+    res.status(500).json({
+      success: false,
+      message: "Error deleting answer",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -657,4 +956,11 @@ module.exports = {
   editEventComment,
   deleteEventComment,
   viewEventComments,
+  addCourseQuestion,
+  updateCourseQuestion,
+  deleteCourseQuestion,
+  viewCourseQuestions,
+  addAnswerToCourseQuestion,
+  updateCourseQuestionAnswer,
+  deleteCourseQuestionAnswer,
 };

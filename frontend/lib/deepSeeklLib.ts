@@ -5,24 +5,37 @@ interface DeepSeekMessage {
 }
 
 export async function createDeepSeekStream(messages: DeepSeekMessage[]) {
-  const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Access-Control-Allow-Origin": "*",
-      // Add this if DeepSeek starts requiring API keys:
-      // 'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`
-    },
-    body: JSON.stringify({
-      model: "deepseek-chat",
-      messages,
-      stream: true,
-    }),
-  });
+  try {
+    const response = await fetch(
+      "https://api.deepseek.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          // Add this if DeepSeek starts requiring API keys:
+           'Authorization': `Bearer ${process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages,
+          stream: true,
+          temperature: 0.7,
+          max_tokens: 1000,
+        }),
+      }
+    );
 
-  if (!response.ok) {
-    throw new Error(`DeepSeek API error: ${response.statusText}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `HTTP error! status: ${response.status}`
+      );
+    }
+
+    return response.body;
+  } catch (error) {
+    console.error("DeepSeek API error:", error);
+    throw error;
   }
-
-  return response.body;
 }
