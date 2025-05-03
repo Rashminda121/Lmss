@@ -19,8 +19,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
   if (!isLoaded) {
     return (
-      <div className="w-full text-center py-12">
-        <div className="w-16 h-16 border-8 border-t-8 border-blue-500 rounded-full border-r-transparent border-b-transparent animate-spin mx-auto"></div>
+      <div className="w-full h-screen flex flex-col items-center justify-center">
+        <div className="w-16 h-16 border-8 border-t-8 border-blue-500 rounded-full border-r-transparent border-b-transparent animate-spin"></div>
         <p className="mt-4 text-blue-500 text-lg font-semibold">Loading...</p>
       </div>
     );
