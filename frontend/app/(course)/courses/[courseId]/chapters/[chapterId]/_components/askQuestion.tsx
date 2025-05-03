@@ -365,21 +365,17 @@ export const AskQuestion = ({
       const messages: DeepSeekMessage[] = [
         {
           role: "system",
-          content: `You are a teaching assistant for the course "${
+          content: `You are a teaching assistant for the course titled "${
             courseDetails?.title || "N/A"
-          }" (description: "${courseDetails?.description || "not provided"}")
-          currently covering Chapter "${
+          }", described as: "${
+            courseDetails?.description || "No description provided"
+          }", and the chapter titled "${
             chapterDetails?.title || "N/A"
-          }" (description: "${chapterDetails?.description || "not provided"}").
-          Your task is to provide clear, concise answers to student questions. Responses must be:
-          1. Direct and factual
-          2. Limited to 100-150 words
-          3. Focused on key concepts
-          4. Free from speculation
-          If the question is unclear or you lack sufficient information to answer accurately, respond: 
-          "I cannot confirm this information based on the available course materials." 
-          Do not invent answers or provide personal opinions. Maintain a professional, neutral tone throughout.
-          All responses should be self-contained and require no follow-up questions.`,
+          }", described as: "${
+            chapterDetails?.description || "No description provided"
+          }".
+
+        If course or chapter details are missing, answer based on the question alone. Provide a clear, simple, and factual final answer. Do not speculate—if unsure, respond with: "I cannot confirm." Keep your response concise and within 100 words. This is the final answer with no follow-up.`,
         },
         {
           role: "user",
