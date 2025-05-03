@@ -1,11 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const lecturerController = require("../controllers/lecturerController");
+const {
+  lecturerProfile,
+  listCourseUsers,
+} = require("../controllers/lecturerController");
 
-router.get("/", lecturerController.lecturerProfile);
+router.get("/", lecturerProfile);
 
-router.post("/create-user", lecturerController.createUser);
-router.put("/update-user", lecturerController.updateUser);
-router.delete("/delete-user", lecturerController.deleteUser);
+router.post("/listCourseUsers", listCourseUsers);
 
 module.exports = router;

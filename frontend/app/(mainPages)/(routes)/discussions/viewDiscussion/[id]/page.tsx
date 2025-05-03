@@ -70,12 +70,14 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
   const newestCommentRef = useRef<HTMLDivElement>(null);
   const commentsContainerRef = useRef<HTMLDivElement>(null);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/viewDiscussion",
-        { id }
-      );
+      const response = await axios.post(`${backendUrl}/user/viewDiscussion`, {
+        id,
+      });
       setData(response.data);
       setFormData((prev) => ({
         ...prev,
@@ -112,10 +114,9 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
   const getCommentData = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/viewDisComments",
-        { disid: id }
-      );
+      const response = await axios.post(`${backendUrl}/user/viewDisComments`, {
+        disid: id,
+      });
       setCommentData(response.data);
     } catch (error: any) {
       console.log("No comments available");
@@ -178,16 +179,13 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/updateDiscussion",
-        {
-          _id: formData._id,
-          title: formData.title,
-          description: formData.description,
-          category: formData.category,
-          email: formData.email,
-        }
-      );
+      const response = await axios.post(`${backendUrl}/user/updateDiscussion`, {
+        _id: formData._id,
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        email: formData.email,
+      });
 
       Swal.fire({
         toast: true,
@@ -275,12 +273,9 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
       });
 
       if (result.isConfirmed) {
-        const response = await axios.delete(
-          "http://localhost:4000/user/deleteDiscussion",
-          {
-            data: { id },
-          }
-        );
+        const response = await axios.delete("/user/deleteDiscussion", {
+          data: { id },
+        });
 
         Swal.fire({
           toast: true,
@@ -329,17 +324,14 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
     e.preventDefault();
 
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/addDisComment",
-        {
-          disid: id,
-          uid: user?.id,
-          uimage: user?.imageUrl,
-          name: user?.fullName,
-          description: comment.description,
-          email: user?.primaryEmailAddress?.emailAddress,
-        }
-      );
+      const response = await axios.post(`${backendUrl}/user/addDisComment`, {
+        disid: id,
+        uid: user?.id,
+        uimage: user?.imageUrl,
+        name: user?.fullName,
+        description: comment.description,
+        email: user?.primaryEmailAddress?.emailAddress,
+      });
 
       Swal.fire({
         toast: true,
@@ -424,13 +416,10 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
   const handleCommentUpdate = async () => {
     try {
-      const response = await axios.put(
-        "http://localhost:4000/user/editDisComment",
-        {
-          _id: updatedText._id,
-          description: updatedText.description,
-        }
-      );
+      const response = await axios.put(`${backendUrl}/user/editDisComment`, {
+        _id: updatedText._id,
+        description: updatedText.description,
+      });
 
       Swal.fire({
         toast: true,
@@ -505,7 +494,7 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
 
       if (result.isConfirmed) {
         const response = await axios.delete(
-          "http://localhost:4000/user/deleteDisComment",
+          `${backendUrl}/user/deleteDisComment`,
           {
             data: { _id: cid },
           }

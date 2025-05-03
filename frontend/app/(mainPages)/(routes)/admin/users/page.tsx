@@ -54,11 +54,12 @@ const AdminUsers = () => {
 
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/admin/listUsers"
-      );
+      const response = await axios.get(`${backendUrl}/api/admin/listUsers`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -133,7 +134,7 @@ const AdminUsers = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete("http://localhost:4000/api/admin/deleteUser", {
+        await axios.delete(`${backendUrl}/api/admin/deleteUser`, {
           data: { _id: userId },
         });
         Swal.fire({
@@ -215,7 +216,7 @@ const AdminUsers = () => {
       };
 
       const response = await axios.put(
-        "http://localhost:4000/api/admin/updateUser",
+        `${backendUrl}/api/admin/updateUser`,
         updateData
       );
 

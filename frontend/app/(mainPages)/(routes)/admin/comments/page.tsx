@@ -54,14 +54,17 @@ const AdminComments = () => {
 
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
       const [discussionResponse, eventResponse, disResponse, evResponse] =
         await Promise.all([
-          axios.get("http://localhost:4000/api/admin/listDisComments"),
-          axios.get("http://localhost:4000/api/admin/listEventComments"),
-          axios.get("http://localhost:4000/api/admin/listDiscussions"),
-          axios.get("http://localhost:4000/api/admin/listEvents"),
+          axios.get(`${backendUrl}/api/admin/listDisComments`),
+          axios.get(`${backendUrl}/api/admin/listEventComments`),
+          axios.get(`${backendUrl}/api/admin/listDiscussions`),
+          axios.get(`${backendUrl}/api/admin/listEvents`),
         ]);
 
       setDiscussionComments(discussionResponse.data);
@@ -144,8 +147,8 @@ const AdminComments = () => {
     if (result.isConfirmed) {
       try {
         const endpoint = isEventComment
-          ? "http://localhost:4000/api/admin/deleteEventComment"
-          : "http://localhost:4000/api/admin/deleteDisComment";
+          ? `${backendUrl}/api/admin/deleteEventComment`
+          : `${backendUrl}/api/admin/deleteDisComment`;
 
         await axios.delete(endpoint, { data: { _id: commentId } });
 

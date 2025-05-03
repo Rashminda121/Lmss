@@ -142,7 +142,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
       });
 
       if (result.isConfirmed) {
-        await axios.delete(`http://localhost:4000/user/deleteEvent`, {
+        await axios.delete(`${backendUrl}/user/deleteEvent`, {
           data: { id },
         });
 
@@ -168,12 +168,12 @@ export default function ViewEvent({ params }: ViewEventProps) {
     }
   };
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/viewEvent",
-        { id }
-      );
+      const response = await axios.post(`${backendUrl}/user/viewEvent`, { id });
       setData(response.data);
       setFormData((prev) => ({
         ...prev,
@@ -219,7 +219,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
   const getCommentData = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/user/viewEventComments",
+        `${backendUrl}/user/viewEventComments`,
         { eid: id }
       );
       setComments(response.data);
@@ -283,7 +283,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
 
     try {
       const response = await axios.put(
-        "http://localhost:4000/user/updateEvent",
+        `${backendUrl}/user/updateEvent`,
         formData
       );
 
@@ -328,17 +328,14 @@ export default function ViewEvent({ params }: ViewEventProps) {
 
     setIsCommentLoading(true);
     try {
-      const response = await axios.post(
-        "http://localhost:4000/user/addEventComment",
-        {
-          eid: id,
-          uid: user?.id,
-          text: newComment.text,
-          uimage: user?.imageUrl,
-          name: user?.fullName,
-          email: user?.primaryEmailAddress?.emailAddress,
-        }
-      );
+      const response = await axios.post(`${backendUrl}/user/addEventComment`, {
+        eid: id,
+        uid: user?.id,
+        text: newComment.text,
+        uimage: user?.imageUrl,
+        name: user?.fullName,
+        email: user?.primaryEmailAddress?.emailAddress,
+      });
 
       Swal.fire({
         toast: true,
@@ -392,7 +389,7 @@ export default function ViewEvent({ params }: ViewEventProps) {
 
       if (result.isConfirmed) {
         const response = await axios.delete(
-          "http://localhost:4000/user/deleteEventComment",
+          `${backendUrl}/user/deleteEventComment`,
           {
             data: { _id: cid },
           }
@@ -462,13 +459,10 @@ export default function ViewEvent({ params }: ViewEventProps) {
 
   const handleCommentUpdate = async () => {
     try {
-      const response = await axios.put(
-        "http://localhost:4000/user/editEventComment",
-        {
-          _id: updatedText._id,
-          text: updatedText.description,
-        }
-      );
+      const response = await axios.put(`${backendUrl}/user/editEventComment`, {
+        _id: updatedText._id,
+        text: updatedText.description,
+      });
 
       Swal.fire({
         toast: true,

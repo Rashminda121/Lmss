@@ -16,6 +16,9 @@ const MainPage = () => {
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   useEffect(() => {
     if (isLoaded && !user) {
       router.push("/");
@@ -45,7 +48,7 @@ const MainPage = () => {
     };
 
     try {
-      const response = await fetch("http://localhost:4000/user/addUser", {
+      const response = await fetch(`${backendUrl}/user/addUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

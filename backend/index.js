@@ -22,7 +22,7 @@ const lecturerRoutes = require("./routes/lecturerRoutes");
 
 app.use("/api/admin", adminRoutes);
 app.use("/user", userRoutes);
-app.use("/lecturer", lecturerRoutes);
+app.use("/api/lecturer", lecturerRoutes);
 
 app.get("/", (req, res) => {
   res.send("Hello from the backend!");

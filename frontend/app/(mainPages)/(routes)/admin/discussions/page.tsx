@@ -50,13 +50,15 @@ const AdminDiscussions = () => {
   const discussionsPerPage = 5;
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/admin/listDiscussions"
+        `${backendUrl}/api/admin/listDiscussions`
       );
       setData(response.data);
-      console.log(response.data); ///////////////////
     } catch (error) {
       console.error("Error fetching discussions:", error);
       Swal.fire({
@@ -131,8 +133,8 @@ const AdminDiscussions = () => {
     e.preventDefault();
     try {
       const url = isEditMode
-        ? "http://localhost:4000/api/admin/updateDiscussion"
-        : "http://localhost:4000/api/admin/addDiscussion";
+        ? `${backendUrl}/api/admin/updateDiscussion`
+        : `${backendUrl}/api/admin/addDiscussion`;
 
       const response = await axios.post(url, formData);
 
@@ -191,7 +193,7 @@ const AdminDiscussions = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete("http://localhost:4000/api/admin/deleteDiscussion", {
+        await axios.delete(`${backendUrl}/api/admin/deleteDiscussion`, {
           data: { _id: discussionId },
         });
         Swal.fire({

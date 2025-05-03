@@ -64,11 +64,12 @@ const AdminArticles = () => {
 
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/admin/listArticles"
-      );
+      const response = await axios.get(`${backendUrl}/api/admin/listArticles`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching articles:", error);
@@ -216,8 +217,8 @@ const AdminArticles = () => {
 
     try {
       const endpoint = isEditMode
-        ? "http://localhost:4000/api/admin/updateArticle"
-        : "http://localhost:4000/api/admin/addArticle";
+        ? `${backendUrl}/api/admin/updateArticle`
+        : `${backendUrl}/api/admin/addArticle`;
 
       const payload = {
         ...formData,
@@ -273,7 +274,7 @@ const AdminArticles = () => {
     }
     setIsModalOpen(true);
   };
-
+  
   const handleDelete = async (articleId: string) => {
     const result = await Swal.fire({
       title: "Are you sure?",
@@ -287,7 +288,7 @@ const AdminArticles = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete("http://localhost:4000/api/admin/deleteArticle", {
+        await axios.delete(`${backendUrl}/api/admin/deleteArticle`, {
           data: { _id: articleId },
         });
         Swal.fire({

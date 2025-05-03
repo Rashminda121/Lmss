@@ -132,10 +132,13 @@ export const AskQuestion = ({
   const role = userProfile?.role;
   const userRole = role === "lecturer" || role === "admin" ? role : "student";
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getQuestionData = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:4000/user/viewCourseQuestions",
+        `${backendUrl}/user/viewCourseQuestions`,
         { courseId, chapterId }
       );
       // Ensure questions is always an array
@@ -165,7 +168,7 @@ export const AskQuestion = ({
       setIsSubmitting(true);
 
       const response = await axios.post(
-        "http://localhost:4000/user/addCourseQuestion",
+        `${backendUrl}/user/addCourseQuestion`,
         {
           userId: userId,
           courseId: courseId,
@@ -212,7 +215,7 @@ export const AskQuestion = ({
       setIsSubmitting(true);
 
       const response = await axios.post(
-        "http://localhost:4000/user/addAnswerToCourseQuestion",
+        `${backendUrl}/user/addAnswerToCourseQuestion`,
         {
           questionId: questionId,
           userId: userId,
@@ -254,7 +257,7 @@ export const AskQuestion = ({
       });
 
       if (result.isConfirmed) {
-        await axios.delete("http://localhost:4000/user/deleteCourseQuestion", {
+        await axios.delete(`${backendUrl}/user/deleteCourseQuestion`, {
           data: { _id: questionId },
         });
 
@@ -284,12 +287,9 @@ export const AskQuestion = ({
       });
 
       if (result.isConfirmed) {
-        await axios.delete(
-          "http://localhost:4000/user/deleteCourseQuestionAnswer",
-          {
-            data: { questionId, answerId },
-          }
-        );
+        await axios.delete(`${backendUrl}/user/deleteCourseQuestionAnswer`, {
+          data: { questionId, answerId },
+        });
 
         Swal.fire("Deleted!", "Your answer has been deleted.", "success");
         getQuestionData();
@@ -307,7 +307,7 @@ export const AskQuestion = ({
 
   const saveEditedQuestion = async (questionId: string) => {
     try {
-      await axios.put("http://localhost:4000/user/updateCourseQuestion", {
+      await axios.put(`${backendUrl}/user/updateCourseQuestion`, {
         _id: questionId,
         text: editQuestionText,
       });
@@ -332,7 +332,7 @@ export const AskQuestion = ({
 
   const saveEditedAnswer = async (questionId: string, answerId: string) => {
     try {
-      await axios.put("http://localhost:4000/user/updateCourseQuestionAnswer", {
+      await axios.put(`${backendUrl}/user/updateCourseQuestionAnswer`, {
         answerId: answerId,
         questionId: questionId,
         text: editAnswerText,

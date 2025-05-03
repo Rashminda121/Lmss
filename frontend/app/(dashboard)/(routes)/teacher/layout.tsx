@@ -12,6 +12,8 @@ const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
   const router = useRouter();
 
   const userEmail = user?.emailAddresses?.[0]?.emailAddress ?? "";
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn || hasCheckedAuth.current) return;
@@ -19,7 +21,7 @@ const TeacherLayout = ({ children }: { children: React.ReactNode }) => {
     const getUserData = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:4000/user/userProfile?uid=${userId}&email=${userEmail}`
+          `${backendUrl}/user/userProfile?uid=${userId}&email=${userEmail}`
         );
         setIsLecturer(
           response.data.role === "lecturer" || response.data.role === "admin"

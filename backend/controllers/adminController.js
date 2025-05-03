@@ -444,6 +444,7 @@ const listCourses = async (req, res) => {
     });
   }
 };
+
 const listCourseCategories = async (req, res) => {
   try {
     const mysqlConnection = await connectMysqlDB();

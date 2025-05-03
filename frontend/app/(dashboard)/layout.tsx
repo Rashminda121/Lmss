@@ -25,6 +25,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </div>
     );
   }
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
   const handleAddUser = async () => {
     if (!user) return;
@@ -37,7 +39,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
     };
 
     try {
-      const response = await fetch("http://localhost:4000/user/addUser", {
+      const response = await fetch(`${backendUrl}/user/addUser`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

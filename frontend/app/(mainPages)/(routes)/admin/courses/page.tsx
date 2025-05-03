@@ -55,11 +55,12 @@ const AdminCourses = () => {
 
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/admin/listCourses"
-      );
+      const response = await axios.get(`${backendUrl}/api/admin/listCourses`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching courses:", error);
@@ -70,7 +71,7 @@ const AdminCourses = () => {
   const getCategoryData = async () => {
     try {
       const response = await axios.get(
-        "http://localhost:4000/api/admin/listCourseCategories"
+        `${backendUrl}/api/admin/listCourseCategories`
       );
       setCategoryData(response.data);
     } catch (error) {
@@ -211,13 +212,13 @@ const AdminCourses = () => {
     e.preventDefault();
     try {
       if (isEditMode) {
-        await axios.put("http://localhost:4000/api/admin/updateCourse", {
+        await axios.put(`${backendUrl}/api/admin/updateCourse`, {
           ...formData,
           updatedAt: new Date().toISOString(),
         });
         showSuccessToast("Course updated successfully");
       } else {
-        await axios.post("http://localhost:4000/api/admin/createCourse", {
+        await axios.post(`${backendUrl}/api/admin/createCourse`, {
           ...formData,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
@@ -245,7 +246,7 @@ const AdminCourses = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete("http://localhost:4000/api/admin/deleteCourse", {
+        await axios.delete(`${backendUrl}/api/admin/deleteCourse`, {
           data: { id: courseId },
         });
         showSuccessToast("Course deleted successfully");
@@ -272,7 +273,7 @@ const AdminCourses = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.put("http://localhost:4000/api/admin/updateCoursePublish", {
+        await axios.put(`${backendUrl}/api/admin/updateCoursePublish`, {
           id: courseId,
           isPublished: !currentStatus,
           updatedAt: new Date().toISOString(),

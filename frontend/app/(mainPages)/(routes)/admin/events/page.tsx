@@ -75,11 +75,12 @@ const AdminEvents = () => {
   const { user } = useUser();
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/admin/listEvents"
-      );
+      const response = await axios.get(`${backendUrl}/api/admin/listEvents`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching events:", error);
@@ -208,8 +209,8 @@ const AdminEvents = () => {
     e.preventDefault();
     try {
       const url = isEditMode
-        ? "http://localhost:4000/api/admin/updateEvent"
-        : "http://localhost:4000/api/admin/addEvent";
+        ? `${backendUrl}/api/admin/updateEvent`
+        : `${backendUrl}/api/admin/addEvent`;
 
       const response = await axios.post(url, {
         ...formData,
@@ -272,7 +273,7 @@ const AdminEvents = () => {
 
     if (result.isConfirmed) {
       try {
-        await axios.delete("http://localhost:4000/api/admin/deleteEvent", {
+        await axios.delete(`${backendUrl}/api/admin/deleteEvent`, {
           data: { _id: eventId },
         });
         Swal.fire({

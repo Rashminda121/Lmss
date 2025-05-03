@@ -31,11 +31,12 @@ const Discussions = () => {
   const { user } = useUser();
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.get(
-        "http://localhost:4000/user/listDiscussions"
-      );
+      const response = await axios.get(`${backendUrl}/user/listDiscussions`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching discussions:", error);
@@ -109,7 +110,7 @@ const Discussions = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:4000/user/addDiscussion",
+        `${backendUrl}/user/addDiscussion`,
         formData
       );
 

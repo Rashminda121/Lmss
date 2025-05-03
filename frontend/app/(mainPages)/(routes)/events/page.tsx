@@ -105,9 +105,12 @@ const Events = () => {
     image: "",
   });
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     try {
-      const response = await axios.get("http://localhost:4000/user/listEvents");
+      const response = await axios.get(`${backendUrl}/user/listEvents`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching discussions:", error);
@@ -269,7 +272,7 @@ const Events = () => {
       };
 
       const response = await axios.post(
-        "http://localhost:4000/user/addEvent",
+        `${backendUrl}/user/addEvent`,
         dataToSubmit
       );
 

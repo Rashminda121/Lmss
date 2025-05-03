@@ -24,10 +24,10 @@ const Articles: React.FC = () => {
   const hasFetchedData = useRef(false);
 
   const getData = async () => {
+    const backendUrl =
+      process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/admin/listArticles"
-      );
+      const response = await axios.get(`${backendUrl}/api/admin/listArticles`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching articles:", error);

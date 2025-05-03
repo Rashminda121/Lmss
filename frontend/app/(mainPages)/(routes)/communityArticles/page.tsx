@@ -23,12 +23,13 @@ const CommunityArticles = () => {
   const [isLoading, setIsLoading] = useState(true);
   const hasFetchedData = useRef(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const getData = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(
-        "http://localhost:4000/api/admin/listArticles"
-      );
+      const response = await axios.get(`${backendUrl}/api/admin/listArticles`);
       setData(response.data);
     } catch (error) {
       console.error("Error fetching articles:", error);
