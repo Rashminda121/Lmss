@@ -10,6 +10,8 @@ COPY . .
 
 COPY .env .env
 
+COPY prisma ./prisma
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
