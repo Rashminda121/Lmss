@@ -1,3 +1,19 @@
+/*
+ * Project: LMSS - Lumina
+ * Author: Jayamuni Rashminda
+ *
+ * Description:
+ * Lumina is a user-friendly and efficient learning management platform
+ * designed for students and lecturers. It enables students to enroll in
+ * courses, learn at their own pace, and engage in meaningful discussions.
+ * Lecturers can effectively manage course content, monitor student progress,
+ * and provide timely feedback. By incorporating intelligent tools and real-time
+ * insights, Lumina enhances the overall learning experience, supports diverse
+ * learning styles, and fosters collaboration within an academic environment.
+ *
+ * License: © Jayamuni Rashminda. All rights reserved.
+ */
+
 "use client";
 
 import { useUser } from "@clerk/nextjs";
