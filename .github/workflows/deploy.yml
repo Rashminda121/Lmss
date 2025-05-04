@@ -43,10 +43,13 @@ jobs:
     needs: frontend-build
     runs-on: [self-hosted, frontend]
     steps:
+      - name: Remove old frontend image (if exists)
+        run: docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest || true
+
       - name: Pull frontend image from Docker Hub
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
 
-      - name: Remove old frontend container if exists
+      - name: Stop and remove frontend container
         run: docker rm -f lmss-frontend-container || true
 
       - name: Create frontend container
@@ -60,10 +63,13 @@ jobs:
     needs: backend-build
     runs-on: [self-hosted, backend]
     steps:
+      - name: Remove old backend image (if exists)
+        run: docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest || true
+
       - name: Pull backend image from Docker Hub
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
 
-      - name: Remove old backend container if exists
+      - name: Stop and remove backend container
         run: docker rm -f lmss-backend-container || true
 
       - name: Create backend container
