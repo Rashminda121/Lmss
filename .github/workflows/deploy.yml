@@ -78,3 +78,6 @@ jobs:
 
       - name: Start backend container
         run: docker start lmss-backend-container
+
+      - name: Clean unused images
+        run: docker image prune -a -f
