@@ -30,6 +30,18 @@ interface CombinedData extends UserCompletedData {
   role?: string;
 }
 
+type ChapterData = {
+  courseId: string;
+  courseTitle: string;
+  chapterId: string;
+  chapterTitle: string;
+};
+
+type CourseChapterCount = {
+  course: string;
+  total: number;
+};
+
 const AnalyticsPage = async () => {
   const { userId } = auth();
 
@@ -39,6 +51,7 @@ const AnalyticsPage = async () => {
 
   const backendUrl =
     process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   if (!backendUrl) {
     console.error("Backend URL is not defined.");
     return;
@@ -66,10 +79,34 @@ const AnalyticsPage = async () => {
   const courseCount =
     userDetails?.role === "admin" ? chartData.length : data.length;
 
+  // Total chapter count
   const chapterCount =
     userDetails?.role === "admin"
       ? adminFlattenedChapterData.length
       : flattenedChapterData.length;
+
+  // Chapter count for each course
+  const courseChapterMap: Record<string, { course: string; total: number }> =
+    {};
+
+  (userDetails.role === "admin"
+    ? adminFlattenedChapterData
+    : flattenedChapterData
+  ).forEach((item) => {
+    if (courseChapterMap[item.courseId]) {
+      courseChapterMap[item.courseId].total++;
+    } else {
+      courseChapterMap[item.courseId] = {
+        course: item.courseTitle,
+        total: 1,
+      };
+    }
+  });
+
+  const courseChapterMaResult = Object.values(courseChapterMap).map((item) => ({
+    name: item.course,
+    total: item.total,
+  }));
 
   const userCompletedCount = flattenedUserProgressData
     .filter((progress) => progress.isCompleted)
@@ -182,7 +219,7 @@ const AnalyticsPage = async () => {
         />
       </div>
 
-      {/* <div>{JSON.stringify(userDetails, null, 2)}</div> */}
+      {/* <div>{JSON.stringify(chartData, null, 2)}</div> */}
 
       {/* Chart Section */}
       <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
@@ -190,7 +227,23 @@ const AnalyticsPage = async () => {
           Enrollment Overview
         </h2>
         <div className="h-80">
-          <Chart data={data} />
+          <Chart
+            data={userDetails?.role === "admin" ? chartData : data}
+            xAxisLabel="Courses"
+            yAxisLabel="Enrollments"
+          />
+        </div>
+      </div>
+      <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm border border-gray-100">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Courses Overview
+        </h2>
+        <div className="h-80">
+          <Chart
+            data={courseChapterMaResult}
+            xAxisLabel="Courses"
+            yAxisLabel="Chapters"
+          />
         </div>
       </div>
 
