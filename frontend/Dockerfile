@@ -1,6 +1,6 @@
-FROM node:20
+FROM node:20 AS builder
 
-WORKDIR /usr/src/app
+WORKDIR /app/frontend
 
 COPY package*.json ./
 
@@ -13,3 +13,5 @@ COPY .env .env
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
+
+
