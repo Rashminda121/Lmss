@@ -4,6 +4,7 @@ import axios from "axios";
 import React, { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import { FaArrowLeft, FaArrowRight, FaLink, FaBookOpen } from "react-icons/fa";
+import Image from "next/image";
 
 interface Article {
   _id: string;
@@ -111,9 +112,11 @@ const Articles: React.FC = () => {
                     <div className="bg-white rounded-xl shadow-lg overflow-hidden h-full flex flex-col border border-gray-100 hover:shadow-xl transition-all duration-300">
                       {article.image && (
                         <div className="h-56 overflow-hidden relative">
-                          <img
+                          <Image
                             src={article.image}
                             alt={article.title}
+                            width={800}
+                            height={600}
                             className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
                           />
                           <div className="absolute top-4 left-4">

@@ -34,7 +34,7 @@ jobs:
 
   deploy:
     needs: build
-    runs-on: self-hosted
+    runs-on: [self-hosted, frontend]
     steps:
       - name: Pull frontend image from Docker Hub
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest

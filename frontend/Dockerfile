@@ -1,6 +1,6 @@
 FROM node:20 AS builder
 
-WORKDIR /app/frontend
+WORKDIR /app
 
 COPY package*.json ./
 
