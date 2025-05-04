@@ -189,7 +189,7 @@ const SubNavbar: React.FC = () => {
           >
             <div className="w-8 h-8 rounded-full overflow-hidden">
               <img
-                src="/profile-user.png"
+                src={userProfile?.image || "/profile-user.png"}
                 className="w-full h-full object-cover"
                 alt="Profile"
               />

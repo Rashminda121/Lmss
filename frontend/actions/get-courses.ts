@@ -21,6 +21,7 @@ export const getCourses = async ({
   categoryId,
 }: GetCourses): Promise<CourseWithProgressWithCategory[]> => {
   try {
+    // First get all courses that match the filters
     const courses = await db.course.findMany({
       where: {
         isPublished: true,
@@ -50,24 +51,31 @@ export const getCourses = async ({
       },
     });
 
+    // Get all enrolled courses for the user
+    const userEnrollments = await db.enrolled.findMany({
+      where: {
+        userId: userId,
+      },
+      select: {
+        courseId: true,
+      },
+    });
+
+    // Filter out courses where the user is enrolled
+    const enrolledCourseIds = userEnrollments.map(
+      (enrollment) => enrollment.courseId
+    );
+    const unenrolledCourses = courses.filter(
+      (course) =>
+        !enrolledCourseIds.includes(course.id) && course.purchase.length === 0
+    );
+
+    // For these unenrolled courses, we don't need to calculate progress
     const coursesWithProgress: CourseWithProgressWithCategory[] =
-      await Promise.all(
-        courses.map(async (course) => {
-          if (course.purchase.length == 0) {
-            return {
-              ...course,
-              progress: null,
-            };
-          }
-
-          const progressPercentage = await getProgress(userId, course.id);
-
-          return {
-            ...course,
-            progress: progressPercentage,
-          };
-        })
-      );
+      unenrolledCourses.map((course) => ({
+        ...course,
+        progress: null, // Progress is null for unenrolled courses
+      }));
 
     return coursesWithProgress;
   } catch (error) {

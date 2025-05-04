@@ -17,11 +17,11 @@ const userProfile = async (req, res) => {
 
     if (!email) {
       user = await User.findOne({ uid: uid }).select(
-        "name email phone image role address updatedAt"
+        "_id name email phone image role address createdAt updatedAt"
       );
     } else {
       user = await User.findOne({ uid: uid, email: email }).select(
-        "name email phone image role address updatedAt"
+        "_id name email phone image role address createdAt updatedAt"
       );
     }
 
@@ -45,13 +45,11 @@ const addUser = async (req, res) => {
     }
     const token = jwt.sign({ id: uid }, process.env.JWT_SECRET);
 
-    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists", token });
     }
 
-    // Create a new user
     const newUser = new User({ uid, name, email, image });
     await newUser.save();
 
@@ -63,12 +61,82 @@ const addUser = async (req, res) => {
   }
 };
 
-const updateUser = (req, res) => {
-  res.send("User updates the user");
+const updateUser = async (req, res) => {
+  try {
+    const { _id, name, phone, address, image } = req.body;
+
+    if (!_id || !name) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID and name are required fields",
+      });
+    }
+
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    user.name = name || user.name;
+    user.phone = phone || user.phone;
+    user.address = address || user.address;
+    user.image = image || user.image;
+    user.updatedAt = Date.now();
+
+    const updatedUser = await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "User profile updated successfully",
+    });
+  } catch (error) {
+    console.error("Error updating user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while updating user profile",
+      error: error.message,
+    });
+  }
 };
 
-const deleteUser = (req, res) => {
-  res.send("User deletes the user");
+const deleteUser = async (req, res) => {
+  try {
+    const { _id } = req.body;
+
+    if (!_id) {
+      return res.status(400).json({
+        success: false,
+        message: "User ID is required",
+      });
+    }
+
+    const deletedUser = await User.findByIdAndDelete(_id);
+    if (!deletedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User account deleted successfully",
+      data: {
+        _id: deletedUser._id,
+        email: deletedUser.email,
+      },
+    });
+  } catch (error) {
+    console.error("Error deleting user:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while deleting user account",
+      error: error.message,
+    });
+  }
 };
 
 const addDiscussion = async (req, res) => {

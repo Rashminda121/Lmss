@@ -10,6 +10,8 @@ import { File } from "lucide-react";
 import { CourseProgressButton } from "./_components/course-progress-button";
 import { AskQuestion } from "./_components/askQuestion";
 import { getChapterDetails } from "@/actions/get-chapter-details";
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 
 const ChapterIdPage = async ({
   params,
@@ -25,6 +27,19 @@ const ChapterIdPage = async ({
     return redirect("/");
   }
 
+  const [chapterData, chapterDetailsData] = await Promise.all([
+    getChapter({
+      userId,
+      chapterId: params.chapterId,
+      courseId: params.courseId,
+    }),
+    getChapterDetails({
+      userId,
+      chapterId: params.chapterId,
+      courseId: params.courseId,
+    }),
+  ]);
+
   const {
     chapter,
     course,
@@ -34,17 +49,9 @@ const ChapterIdPage = async ({
     userProgress,
     purchase,
     enrolled,
-  } = await getChapter({
-    userId,
-    chapterId: params.chapterId,
-    courseId: params.courseId,
-  });
+  } = chapterData;
 
-  const { chapterDetails, courseDetails } = await getChapterDetails({
-    userId,
-    chapterId: params.chapterId,
-    courseId: params.courseId,
-  });
+  const { chapterDetails, courseDetails } = chapterDetailsData;
 
   if (!chapter || !course) {
     return redirect("/");
@@ -52,8 +59,6 @@ const ChapterIdPage = async ({
 
   const videoUrl = chapter?.videoUrl || "";
 
-  // const isLocked = !chapter.isFree && !purchase;
-  // const completeOnEnd = !!purchase && !userProgress?.isCompleted;
   const isLocked = !chapter.isFree && !enrolled;
   const completeOnEnd = !!enrolled && !userProgress?.isCompleted;
 
@@ -92,10 +97,7 @@ const ChapterIdPage = async ({
                 isCompleted={!!userProgress?.isCompleted}
               />
             ) : (
-              <CourseEnrollButton
-                courseId={params.courseId}
-                // price={course.price!}
-              />
+              <CourseEnrollButton courseId={params.courseId} />
             )}
           </div>
           <Separator />
@@ -139,4 +141,25 @@ const ChapterIdPage = async ({
   );
 };
 
-export default ChapterIdPage;
+const LoadingSpinner = () => {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <Loader2 className="h-12 w-12 animate-spin text-sky-700" />
+    </div>
+  );
+};
+
+export default function ChapterPageWithSuspense({
+  params,
+}: {
+  params: {
+    courseId: string;
+    chapterId: string;
+  };
+}) {
+  return (
+    <Suspense fallback={<LoadingSpinner />}>
+      <ChapterIdPage params={params} />
+    </Suspense>
+  );
+}

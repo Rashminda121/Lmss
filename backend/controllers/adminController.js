@@ -290,7 +290,7 @@ const updateCourse = async (req, res) => {
       title,
       description,
       categoryId,
-      isPublished: isPublished ? 1 : 0, // Convert boolean to MySQL tinyint
+      isPublished: isPublished ? 1 : 0,
       imageUrl,
       updatedAt: new Date(),
     };

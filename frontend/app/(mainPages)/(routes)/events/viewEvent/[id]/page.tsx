@@ -82,6 +82,9 @@ export default function ViewEvent({ params }: ViewEventProps) {
   });
   // const [showShareOptions, setShowShareOptions] = useState(false);
 
+  const backendUrl =
+    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+
   const [formData, setFormData] = useState({
     _id: id,
     title: "",
@@ -167,9 +170,6 @@ export default function ViewEvent({ params }: ViewEventProps) {
       });
     }
   };
-
-  const backendUrl =
-    process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
 
   const getData = async () => {
     try {

@@ -2,7 +2,6 @@
 import {
   FaEdit,
   FaTrashAlt,
-  FaPlus,
   FaSearch,
   FaEye,
   FaEyeSlash,
@@ -40,7 +39,6 @@ const AdminCourses = () => {
   const [data, setData] = useState<Course[]>([]);
   const [categoryData, setCategoryData] = useState<Category[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
@@ -138,7 +136,6 @@ const AdminCourses = () => {
   }, [searchTerm]);
 
   const handleEditClick = (course: Course) => {
-    setIsEditMode(true);
     setFormData({
       id: course.id,
       title: course.title,
@@ -150,20 +147,6 @@ const AdminCourses = () => {
     if (course.imageUrl) {
       setImagePreview(course.imageUrl);
     }
-    setIsModalOpen(true);
-  };
-
-  const handleAddClick = () => {
-    setIsEditMode(false);
-    setFormData({
-      id: "",
-      title: "",
-      description: "",
-      imageUrl: "",
-      isPublished: false,
-      categoryId: categoryData[0]?.id || "",
-    });
-    setImagePreview(null);
     setIsModalOpen(true);
   };
 
@@ -197,7 +180,6 @@ const AdminCourses = () => {
       const reader = new FileReader();
       reader.onloadend = () => {
         const base64String = reader.result as string;
-        //setImagePreview(base64String);
         setFormData({
           ...formData,
           imageUrl: base64String,
@@ -211,25 +193,16 @@ const AdminCourses = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      if (isEditMode) {
-        await axios.put(`${backendUrl}/api/admin/updateCourse`, {
-          ...formData,
-          updatedAt: new Date().toISOString(),
-        });
-        showSuccessToast("Course updated successfully");
-      } else {
-        await axios.post(`${backendUrl}/api/admin/createCourse`, {
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        });
-        showSuccessToast("Course created successfully");
-      }
+      await axios.put(`${backendUrl}/api/admin/updateCourse`, {
+        ...formData,
+        updatedAt: new Date().toISOString(),
+      });
+      showSuccessToast("Course updated successfully");
       getData();
       setIsModalOpen(false);
     } catch (error) {
-      console.error("Error saving course:", error);
-      showErrorToast(`Failed to ${isEditMode ? "update" : "create"} course`);
+      console.error("Error updating course:", error);
+      showErrorToast("Failed to update course");
     }
   };
 
@@ -330,13 +303,6 @@ const AdminCourses = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            {/* <button
-              onClick={handleAddClick}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center justify-center transition-colors"
-            >
-              <FaPlus className="mr-2" />
-              Add Course
-            </button> */}
           </div>
         </div>
 
@@ -349,9 +315,6 @@ const AdminCourses = () => {
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Course
                     </th>
-                    {/* <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden md:table-cell">
-                      User
-                    </th> */}
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider hidden lg:table-cell">
                       Description
                     </th>
@@ -395,15 +358,9 @@ const AdminCourses = () => {
                               <div className="text-sm font-medium text-gray-900 line-clamp-1">
                                 {course.title}
                               </div>
-                              <div className="text-sm text-gray-500 md:hidden line-clamp-1">
-                                {course.user?.email || "Unknown"}
-                              </div>
                             </div>
                           </div>
                         </td>
-                        {/* <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
-                          {course.user?.email || "Unknown"}
-                        </td> */}
                         <td className="px-4 py-4 text-sm text-gray-500 hidden lg:table-cell">
                           <div className="line-clamp-2 max-w-xs">
                             {course.description}
@@ -470,7 +427,7 @@ const AdminCourses = () => {
                   ) : (
                     <tr>
                       <td
-                        colSpan={7}
+                        colSpan={6}
                         className="px-6 py-4 text-center text-gray-500"
                       >
                         No courses found
@@ -573,13 +530,13 @@ const AdminCourses = () => {
         </div>
       </div>
 
-      {/* Modal for Add/Edit Course */}
+      {/* Modal for Edit Course */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center border-b p-4 sticky top-0 bg-white z-10">
               <h2 className="text-xl md:text-2xl font-bold text-gray-800">
-                {isEditMode ? "Edit Course" : "Add New Course"}
+                Edit Course
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -686,7 +643,6 @@ const AdminCourses = () => {
                         className="hidden"
                         accept="image/*"
                         onChange={handleImageChange}
-                        required
                       />
                     </label>
                     {(imagePreview || formData.imageUrl) && (
@@ -727,7 +683,7 @@ const AdminCourses = () => {
                     type="submit"
                     className="px-6 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
                   >
-                    {isEditMode ? "Update Course" : "Add Course"}
+                    Update Course
                   </button>
                 </div>
               </form>
