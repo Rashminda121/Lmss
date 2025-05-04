@@ -1,14 +1,13 @@
-# Build stage
-FROM node:20-slim AS builder
-WORKDIR /app
-COPY frontend/package*.json ./
-RUN npm install
-COPY frontend/ .
-RUN npm run build
+FROM node:20
 
-# Production stage
-FROM node:20-slim
-WORKDIR /app
-COPY --from=builder /app ./
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
 EXPOSE 3000
-CMD ["npm", "start"]
+
+CMD ["npm", "run", "dev"]

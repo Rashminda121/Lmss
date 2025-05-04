@@ -1,7 +1,13 @@
-FROM node:20-slim
-WORKDIR /app
-COPY backend/package*.json ./
+FROM node:20
+
+WORKDIR /usr/src/app
+
+COPY package*.json ./
+
 RUN npm install
-COPY backend/ .
+
+COPY . .
+
 EXPOSE 4000
-CMD ["node", "server.js"]
+
+CMD ["npm", "run", "dev"]
