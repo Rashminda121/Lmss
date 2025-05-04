@@ -1,4 +1,4 @@
-name: Deploy LMSS to Azure via Docker Hub
+name: Deploy LMSS
 
 on:
   push:
