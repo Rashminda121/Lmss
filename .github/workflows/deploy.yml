@@ -46,11 +46,15 @@ jobs:
       - name: Pull frontend image from Docker Hub
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
 
-      - name: Delete old frontend container
+      - name: Remove old frontend container if exists
         run: docker rm -f lmss-frontend-container || true
 
-      - name: Run frontend container
-        run: docker run -d -p 3000:3000 --name lmss-frontend-container ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
+      - name: Create frontend container
+        run: |
+          docker create -p 3000:3000 --name lmss-frontend-container ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
+
+      - name: Start frontend container
+        run: docker start lmss-frontend-container
 
   deploy-backend:
     needs: backend-build
@@ -59,8 +63,12 @@ jobs:
       - name: Pull backend image from Docker Hub
         run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
 
-      - name: Delete old backend container
+      - name: Remove old backend container if exists
         run: docker rm -f lmss-backend-container || true
 
-      - name: Run backend container
-        run: docker run -d -p 4000:4000 --name lmss-backend-container ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
+      - name: Create backend container
+        run: |
+          docker create -p 4000:4000 --name lmss-backend-container ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
+
+      - name: Start backend container
+        run: docker start lmss-backend-container
