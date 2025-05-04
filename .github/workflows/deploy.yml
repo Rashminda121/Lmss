@@ -20,10 +20,10 @@ jobs:
 
       - name: Build and Push Frontend
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend ./frontend
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest ./frontend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
 
       - name: Build and Push Backend
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend ./backend
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest ./backend
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
