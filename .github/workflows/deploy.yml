@@ -5,12 +5,16 @@ on:
     branches: [main]
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+
+      # Uncomment and use if needed
+      # - name: Create .env
+      #   run: echo "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}}" >> .env && echo "CLERK_SECRET_KEY=${{secrets.CLERK_SECRET_KEY}}" >> .env
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -18,12 +22,34 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build and Push Frontend
+      - name: Build and Push Frontend to Docker
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest ./frontend
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
 
-      - name: Build and Push Backend
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest ./backend
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
+    #   - name: Build and Push Backend to Docker
+    #     run: |
+    #       docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest ./backend
+    #       docker push ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
+
+  deploy:
+    needs: build
+    runs-on: self-hosted
+    steps:
+      - name: Pull frontend image from Docker Hub
+        run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
+
+      - name: Delete old frontend container
+        run: docker rm -f lmss-frontend-container || true
+
+      - name: Run frontend container
+        run: docker run -d -p 3000:3000 --name lmss-frontend-container ${{ secrets.DOCKERHUB_USERNAME }}/lmss-frontend:latest
+
+    #   - name: Pull backend image from Docker Hub
+    #     run: docker pull ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
+
+    #   - name: Delete old backend container
+    #     run: docker rm -f lmss-backend-container || true
+
+    #   - name: Run backend container
+    #     run: docker run -d -p 4000:4000 --name lmss-backend-container ${{ secrets.DOCKERHUB_USERNAME }}/lmss-backend:latest
