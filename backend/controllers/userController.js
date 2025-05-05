@@ -217,7 +217,7 @@ const deleteDiscussion = async (req, res) => {
       return res.status(400).json({ message: "ID is required" });
     }
 
-    const deletedDiscussion = await Discussion.findByIdAndDelete(id);
+    const deletedDiscussion = await Discussion.findByIdAndDelete({ _id: id });
 
     res.status(200).json({
       message: "Discussion deleted successfully",

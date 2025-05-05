@@ -1,10 +1,10 @@
-import { category, course } from "@prisma/client";
+import { Category, Course } from "@prisma/client";
 
 import { getProgress } from "@/actions/get-progress";
 import { db } from "@/lib/db";
 
-type CourseWithProgressWithCategory = course & {
-  category: category | null;
+type CourseWithProgressWithCategory = Course & {
+  category: Category | null;
   chapters: { id: string }[];
   progress: number | null;
 };
@@ -30,6 +30,22 @@ export const getCourses = async ({
         },
         categoryId,
       },
+      include: {
+        category: true,
+        chapters: {
+          where: {
+            isPublished: true,
+          },
+          select: {
+            id: true,
+          },
+        },
+        purchase: {
+          where: {
+            userId,
+          },
+        },
+      },
       orderBy: {
         createdAt: "desc",
       },
@@ -50,34 +66,18 @@ export const getCourses = async ({
       (enrollment) => enrollment.courseId
     );
     const unenrolledCourses = courses.filter(
-      (course) => !enrolledCourseIds.includes(course.id)
+      (course) =>
+        !enrolledCourseIds.includes(course.id) && course.purchase.length === 0
     );
 
-    // Manually fetch categories and chapters for each course
-    const coursesWithCategoryAndChapters = await Promise.all(
-      unenrolledCourses.map(async (course) => {
-        // Fetch category for each course
-        const category = await db.category.findUnique({
-          where: { id: course.categoryId || "" },
-        });
+    // For these unenrolled courses, we don't need to calculate progress
+    const coursesWithProgress: CourseWithProgressWithCategory[] =
+      unenrolledCourses.map((course) => ({
+        ...course,
+        progress: null, // Progress is null for unenrolled courses
+      }));
 
-        // Fetch chapters for each course
-        const chapters = await db.chapter.findMany({
-          where: { courseId: course.id },
-          select: { id: true },
-        });
-
-        // Return the enriched course data
-        return {
-          ...course,
-          category,
-          chapters,
-          progress: null, // Progress is null for unenrolled courses
-        };
-      })
-    );
-
-    return coursesWithCategoryAndChapters;
+    return coursesWithProgress;
   } catch (error) {
     console.log("[GET_COURSES]", error);
     return [];

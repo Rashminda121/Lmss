@@ -1,10 +1,10 @@
 import { db } from "@/lib/db";
-import { category, chapter, course } from "@prisma/client";
+import { Category, Chapter, Course } from "@prisma/client";
 import { getProgress } from "@/actions/get-progress";
 
-type CourseWithProgressWithCategory = course & {
-  category: category;
-  chapters: chapter[];
+type CourseWithProgressWithCategory = Course & {
+  category: Category;
+  chapters: Chapter[];
   progress: number | null;
   isEnrolled: boolean;
 };
@@ -15,45 +15,21 @@ type DashboardCourses = {
   allCourses: CourseWithProgressWithCategory[];
 };
 
-type CourseWithChapters = course & {
-  chapters: chapter[];
-};
-
 export const getDashboardCourses = async (
   userId: string
 ): Promise<DashboardCourses> => {
   try {
     // Get all courses with their category and published chapters
-    const courses = await db.course.findMany({
-      where: {
-        id: {
-          not: "",
+    const allCourses = await db.course.findMany({
+      include: {
+        category: true,
+        chapters: {
+          where: {
+            isPublished: true,
+          },
         },
       },
     });
-
-    // Step 2: Map each course and attach only published chapters
-    const allCourses: CourseWithChapters[] = (
-      await Promise.all(
-        courses.map(async (course) => {
-          const publishedChapters = await db.chapter.findMany({
-            where: {
-              courseId: course.id,
-              isPublished: true,
-            },
-          });
-
-          if (publishedChapters.length > 0) {
-            return {
-              ...course,
-              chapters: publishedChapters,
-            };
-          }
-
-          return null;
-        })
-      )
-    ).filter((c): c is CourseWithChapters => c !== null);
 
     // Get user's enrolled courses
     const userEnrollments = await db.enrolled.findMany({
@@ -89,14 +65,14 @@ export const getDashboardCourses = async (
 
     // Filter enrolled courses only for dashboard sections
     const enrolledCourses = coursesWithProgress.filter(
-      (course: any) => course.isEnrolled
+      (course) => course.isEnrolled
     );
 
     const completedCourses = enrolledCourses.filter(
-      (course: any) => course.progress === 100
+      (course) => course.progress === 100
     );
     const coursesInProgress = enrolledCourses.filter(
-      (course: any) => (course.progress ?? 0) < 100
+      (course) => (course.progress ?? 0) < 100
     );
 
     return {

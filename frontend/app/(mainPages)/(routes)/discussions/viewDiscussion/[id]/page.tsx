@@ -273,9 +273,12 @@ export default function ViewDiscussion({ params }: ViewDiscussionProps) {
       });
 
       if (result.isConfirmed) {
-        const response = await axios.delete("/user/deleteDiscussion", {
-          data: { id },
-        });
+        const response = await axios.delete(
+          `${backendUrl}/user/deleteDiscussion`,
+          {
+            data: { id },
+          }
+        );
 
         Swal.fire({
           toast: true,
