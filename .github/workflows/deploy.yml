@@ -1,4 +1,4 @@
-name: Deploy and Update LMSS Application
+name: Deploy LMSS Application
 
 on:
   push:
