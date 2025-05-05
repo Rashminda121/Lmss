@@ -10,9 +10,11 @@ RUN npm cache clean --force
 
 RUN npm install
 
-RUN npx prisma generate
+COPY prisma ./prisma
 
 COPY . .
+
+RUN npx prisma generate
 
 COPY .env .env
 
