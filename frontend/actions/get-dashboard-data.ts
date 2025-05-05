@@ -68,7 +68,7 @@ export const getData = async (userId: string) => {
 
         const progressDetails = await Promise.all(
           chapters.map(async (chapter) => {
-            const userProgress = await db.userProgress.findMany({
+            const userProgress = await db.userprogress.findMany({
               where: {
                 chapterId: chapter.id,
               },

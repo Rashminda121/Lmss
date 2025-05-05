@@ -1,5 +1,5 @@
 import { db } from "@/lib/db";
-import { Attachment, Chapter } from "@prisma/client";
+import { attachment, chapter } from "@prisma/client";
 
 interface GetChapterProps {
   userId: string;
@@ -53,8 +53,8 @@ export const getChapter = async ({
     }
 
     let muxData = null;
-    let attachements: Attachment[] = [];
-    let nextChapter: Chapter | null = null;
+    let attachements: attachment[] = [];
+    let nextChapter: chapter | null = null;
 
     if (purchase || enrolled) {
       attachements = await db.attachment.findMany({
@@ -65,7 +65,7 @@ export const getChapter = async ({
     }
 
     if (chapter.isFree || purchase || enrolled) {
-      muxData = await db.muxData.findUnique({
+      muxData = await db.muxdata.findUnique({
         where: {
           chapterId: chapterId,
         },
@@ -84,7 +84,7 @@ export const getChapter = async ({
         },
       });
     }
-    const userProgress = await db.userProgress.findUnique({
+    const userProgress = await db.userprogress.findUnique({
       where: {
         userId_chapterId: {
           userId,
