@@ -22,6 +22,7 @@ import {
   CalendarDays,
   FileText,
   GraduationCap,
+  MessageCircle,
   MessagesSquare,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -88,6 +89,7 @@ const MainPage = () => {
     { icon: MessagesSquare, name: "Discussions", href: "./discussions" },
     { icon: CalendarDays, name: "Events", href: "./events" },
     { icon: FileText, name: "Articles", href: "./communityArticles" },
+    { icon: MessageCircle, name: "Chats", href: "./chats" },
   ];
 
   return (

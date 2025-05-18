@@ -5,6 +5,7 @@ const DisComment = require("../models/discussionCommentsModel");
 const EventComment = require("../models/eventCommentsModel");
 const jwt = require("jsonwebtoken");
 const CourseQuestion = require("../models/courseQuestionsModel");
+const Chat = require("../models/chatModel");
 
 const userProfile = async (req, res) => {
   try {
@@ -1001,6 +1002,176 @@ const deleteCourseQuestionAnswer = async (req, res) => {
   }
 };
 
+const listUsersChat = async (req, res) => {
+  try {
+    const users = await User.find({}).select("name email image role -_id");
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No users found." });
+    }
+
+    res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error getting users",
+      error: error.message,
+    });
+  }
+};
+
+const sendMessage = async (req, res) => {
+  try {
+    const { email1, email2, message } = req.body;
+
+    // Validate required fields
+    if (!email1 || !email2 || !message || !message.uid || !message.message) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Missing required fields (email1, email2, message.uid, message.message)",
+      });
+    }
+
+    // Generate consistent uchatid regardless of email order
+    const uchatid = [email1, email2].sort().join("_");
+    const uchatid2 = [email2, email1].sort().join("_");
+
+    // Find or create chat and add message in one atomic operation
+    const chat = await Chat.findOneAndUpdate(
+      { uchatid: uchatid || uchatid2 },
+      {
+        $push: {
+          chats: {
+            uid: message.uid,
+            message: message.message,
+            createdAt: new Date(),
+          },
+        },
+        $setOnInsert: {
+          participants: [email1, email2],
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+        setDefaultsOnInsert: true,
+      }
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "Message sent successfully",
+      data: {
+        uchatid: chat.uchatid,
+        participants: [email1, email2],
+        lastMessage: chat.chats[chat.chats.length - 1],
+        messageCount: chat.chats.length,
+      },
+    });
+  } catch (error) {
+    console.error("Error sending message:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send message",
+      error: error.message,
+    });
+  }
+};
+
+const getMessages = async (req, res) => {
+  try {
+    const { email1, email2 } = req.body;
+
+    // Validate required fields
+    if (!email1 || !email2) {
+      return res.status(400).json({
+        success: false,
+        message: "Both email1 and email2 parameters are required",
+      });
+    }
+
+    // Generate consistent uchatid regardless of email order
+    const uchatid = [email1, email2].sort().join("_");
+
+    // Find the chat document
+    const chat = await Chat.findOne({ uchatid }).select("chats");
+
+    // If no chat found, return empty array
+    if (!chat) {
+      return res.status(200).json({
+        success: true,
+        data: {
+          messages: [],
+          participants: [email1, email2],
+        },
+      });
+    }
+
+    // Sort messages by createdAt in ascending order
+    const sortedMessages = chat.chats.sort(
+      (a, b) => new Date(a.createdAt) - new Date(b.createdAt)
+    );
+
+    // Return sorted messages
+    return res.status(200).json({
+      success: true,
+      data: {
+        messages: sortedMessages,
+        participants: [email1, email2],
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch messages",
+      error: error.message,
+    });
+  }
+};
+
+const deleteMessage = async (req, res) => {
+  try {
+    const { email1, email2, messageId } = req.body;
+
+    if (!email1 || !email2 || !messageId) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    const uchatid = [email1, email2].sort().join("_");
+
+    const chat = await Chat.findOne({ uchatid });
+
+    if (!chat) {
+      return res.status(404).json({ error: "Chat not found" });
+    }
+
+    const messageIndex = chat.chats.findIndex(
+      (msg) => msg._id.toString() === messageId
+    );
+
+    if (messageIndex === -1) {
+      return res.status(404).json({ error: "Message not found" });
+    }
+
+    const message = chat.chats[messageIndex];
+    if (message.uid !== req.user.id) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized to delete this message" });
+    }
+
+    chat.chats.splice(messageIndex, 1);
+    chat.updatedAt = Date.now();
+    await chat.save();
+
+    res.status(200).json({ success: true });
+  } catch (error) {
+    console.error("Error deleting message:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -1031,4 +1202,8 @@ module.exports = {
   addAnswerToCourseQuestion,
   updateCourseQuestionAnswer,
   deleteCourseQuestionAnswer,
+  listUsersChat,
+  sendMessage,
+  getMessages,
+  deleteMessage,
 };

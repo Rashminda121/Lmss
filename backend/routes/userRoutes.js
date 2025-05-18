@@ -30,7 +30,12 @@ const {
   addAnswerToCourseQuestion,
   updateCourseQuestionAnswer,
   deleteCourseQuestionAnswer,
+  listUsersChat,
+  sendMessage,
+  getMessages,
+  deleteMessage,
 } = require("../controllers/userController");
+const authenticateToken = require("../middleware/auth");
 
 router.get("/userProfile", userProfile);
 
@@ -68,5 +73,10 @@ router.delete("/deleteCourseQuestion", deleteCourseQuestion);
 router.post("/addAnswerToCourseQuestion", addAnswerToCourseQuestion);
 router.put("/updateCourseQuestionAnswer", updateCourseQuestionAnswer);
 router.delete("/deleteCourseQuestionAnswer", deleteCourseQuestionAnswer);
+
+router.get("/listUsersChat", authenticateToken, listUsersChat);
+router.post("/sendMessage", authenticateToken, sendMessage);
+router.post("/getMessages", authenticateToken, getMessages);
+router.delete("/deleteMessage", authenticateToken, deleteMessage);
 
 module.exports = router;
