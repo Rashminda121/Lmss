@@ -165,7 +165,7 @@ const UserChat = () => {
   };
 
   return (
-    <div className="w-full h-screen md:max-h-[600px] p-0 sm:p-4">
+    <div className="w-full h-screen mt-5 md:max-h-[600px] p-0 sm:p-4">
       <div className="flex h-full w-full max-w-7xl mx-auto bg-white rounded-none sm:rounded-xl shadow overflow-hidden relative">
         {/* Sidebar */}
         <div

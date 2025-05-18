@@ -61,7 +61,7 @@ const addUser = async (req, res) => {
 
         Happy learning!`
       );
-      return res.status(400).json({ message: "User already exists", token });
+      return res.status(200).json({ message: "User already exists", token });
     }
 
     const newUser = new User({ uid, name, email, image });
