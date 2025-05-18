@@ -6,6 +6,7 @@ const EventComment = require("../models/eventCommentsModel");
 const jwt = require("jsonwebtoken");
 const CourseQuestion = require("../models/courseQuestionsModel");
 const Chat = require("../models/chatModel");
+const sendCustomEmail = require("../utils/mail");
 
 const userProfile = async (req, res) => {
   try {
@@ -48,11 +49,36 @@ const addUser = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
+      sendCustomEmail(
+        email,
+        name,
+        "Welcome Back to Lumina LMSS – Let’s Continue Learning!",
+        `Glad to see you back on Lumina LMSS!<br><br>
+
+        Your login was successful. Feel free to explore your courses, continue where you left off, or discover new resources to support your learning journey.
+
+        If you have any questions or need help, assistance is just a click away.<br><br>
+
+        Happy learning!`
+      );
       return res.status(400).json({ message: "User already exists", token });
     }
 
     const newUser = new User({ uid, name, email, image });
     await newUser.save();
+
+    sendCustomEmail(
+      email,
+      name,
+      "Welcome to Lumina LMSS – Let’s Continue Learning!",
+      `Welcome to Lumina LMSS!<br>
+
+      Your account has been created successfully, and the system is ready for you to explore your courses and learning materials.
+
+      If you have any questions or need assistance getting started, help is available whenever needed.<br>
+
+      Enjoy your learning journey with Lumina LMSS!`
+    );
 
     res.status(201).json({ message: "User added successfully", token });
   } catch (error) {
