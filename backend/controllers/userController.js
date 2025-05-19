@@ -71,11 +71,11 @@ const addUser = async (req, res) => {
       email,
       name,
       "Welcome to Lumina LMSS – Let’s Continue Learning!",
-      `Welcome to Lumina LMSS!<br>
+      `Welcome to Lumina LMSS!<br><br>
 
       Your account has been created successfully, and the system is ready for you to explore your courses and learning materials.
 
-      If you have any questions or need assistance getting started, help is available whenever needed.<br>
+      If you have any questions or need assistance getting started, help is available whenever needed.<br><br>
 
       Enjoy your learning journey with Lumina LMSS!`
     );
@@ -686,6 +686,7 @@ const editEventComment = async (req, res) => {
     });
   }
 };
+
 const deleteEventComment = async (req, res) => {
   try {
     const { _id } = req.body;

@@ -6,6 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "echo \"No tests configured\"",
     "lint": "next lint",
     "postinstall": "prisma generate"
   },
@@ -74,6 +75,6 @@
     "prisma": "^5.15.1",
     "prisma-erd-generator": "^2.0.4",
     "tailwindcss": "^3.4.1",
-    "typescript": "^5.5.2"
+    "typescript": "^5.8.3"
   }
 }
