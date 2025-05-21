@@ -31,7 +31,7 @@ export default async function Dashboard() {
         />
         <div>{/* todo :info card */}</div>
       </div>
-      <CoursesList items={[...coursesInProgress, ...completedCourses]} />
+      <CoursesList items={[...coursesInProgress, ...completedCourses]} enrolled={true} />
     </div>
   );
 }

@@ -34,6 +34,7 @@ const {
   sendMessage,
   getMessages,
   deleteMessage,
+  unEnrollCourse,
 } = require("../controllers/userController");
 const authenticateToken = require("../middleware/auth");
 
@@ -78,5 +79,7 @@ router.get("/listUsersChat", authenticateToken, listUsersChat);
 router.post("/sendMessage", authenticateToken, sendMessage);
 router.post("/getMessages", authenticateToken, getMessages);
 router.delete("/deleteMessage", authenticateToken, deleteMessage);
+
+router.delete("/unEnrollCourse", authenticateToken, unEnrollCourse);
 
 module.exports = router;

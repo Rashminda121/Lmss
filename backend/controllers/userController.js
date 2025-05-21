@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const CourseQuestion = require("../models/courseQuestionsModel");
 const Chat = require("../models/chatModel");
 const sendCustomEmail = require("../utils/mail");
+const { connectMysqlDB } = require("../db/db");
 
 const userProfile = async (req, res) => {
   try {
@@ -1199,6 +1200,52 @@ const deleteMessage = async (req, res) => {
   }
 };
 
+const unEnrollCourse = async (req, res) => {
+  try {
+    const { courseId, userId } = req.body;
+
+    if (!courseId || !userId) {
+      return res
+        .status(400)
+        .json({ message: "courseId and userId are required" });
+    }
+
+    const mysqlConnection = await connectMysqlDB();
+
+    await mysqlConnection.execute(
+      "DELETE FROM enrolled WHERE userId = ? AND courseId = ?",
+      [userId, courseId]
+    );
+
+    const [chapters] = await mysqlConnection.execute(
+      "SELECT id FROM chapter WHERE courseId = ?",
+      [courseId]
+    );
+
+    // 3. Delete related user progress entries
+    if (chapters.length > 0) {
+      const chapterIds = chapters.map((ch) => ch.id);
+      await mysqlConnection.execute(
+        `DELETE FROM userprogress WHERE userId = ? AND chapterId IN (${chapterIds
+          .map(() => "?")
+          .join(",")})`,
+        [userId, ...chapterIds]
+      );
+    }
+
+    await mysqlConnection.end();
+
+    res.status(200).json({
+      message: "Unenrolled from course successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error unenrolling from course",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   userProfile,
   addUser,
@@ -1233,4 +1280,5 @@ module.exports = {
   sendMessage,
   getMessages,
   deleteMessage,
+  unEnrollCourse,
 };
